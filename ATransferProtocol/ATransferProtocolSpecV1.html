@@ -1,0 +1,241 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html><head><meta content="text/html; charset=ISO-8859-1" http-equiv="content-type"><title>A Transfer Protocol (ATP) from Frank Cohen and Votsh.com</title></head><body>
+<h1>A Transfer Protocol (ATP)</h1>
+Design Specification Document<br>
+<a href="http://votsh.com/bio-for-frank-cohen/">Frank Cohen</a>, fcohen@votsh.com<br>
+Early Draft, March 8, 2014<br>
+<h2>Goal</h2>
+Easy and efficient file transfer between microcontrollers over a mesh or point-to-point radio network.<br>
+<h2>Concept</h2>
+The Votsh Waves project distributes audio and light show information
+from a server through a lead-peer microcontroller to peer
+microcontrollers. The peers use Atmel 802.15.4 radios in the
+ATmega256RFR2 chip to form a mesh network, or XBee radios.<br>
+<br>
+<img style="border: 0px solid ; width: 254px; height: 294px;" alt="Packet routing among lead peer, peers, server" src="http://votsh.files.wordpress.com/2014/03/atp-routing.jpg"><br>
+A special kind of transfer protocol is needed to make best use of the
+unique characteristics of the mesh network and stack. For example, the
+mesh network enables automatic routing and forwarding of data
+through peers. If the Lead Peer sends data to Peer 1 the best route
+could be through Peer 2.<br>
+
+<br>
+ATP uses a "push" approach to transfer. For example, the lead peer says
+to peer 1, "Hey peer 1, I want to transfer data to you. Here is the
+reference to it, and the size of it, and a chunk size appropriate to
+this type of data and network". The lead peer then goes back to doing
+whatever else it wants.<br>
+<br>
+Peer 1 sends a request to the lead peer, "Hey lead peer, please give me
+chunk #1 of the data". Peer 1 sends an additional request for chunks 2,
+3, and 4 to the lead peer concurrently. Peer 1 then receives a chunk
+and saves the chunk to the right place in a buffer or in a file in a
+SDRAM card.<br>
+<br>
+Peer 1 keeps track of each chunk. It puts the priority on the lower
+chunk numbers. If peer 1 receives higher chunk numbers first, it sends
+a retry request for the lower chunks.<br>
+<br>
+The stack on peer 1 provides an API for apps running on peer 1 to use
+the received chunks and optionally wait for all the chunks to be
+received.<br>
+<br>
+Peer 1 uses checksum values to certify each chunk was correctly received and stored.<br>
+<h2>What ATP Is Not</h2>
+ATP is for point-to-point transfer over a mesh network. ATP is not a
+distributed hashmap system. For that we recommend you look at <a href="http://telehash.org">telehash</a>.
+Telehash sends and receives small encrypted bits of JSON (with optional
+binary payloads) via UDP using an efficient routing system based on <a href="http://en.wikipedia.org/wiki/Kademlia">Kademlia</a>, a proven and popular <a href="http://en.wikipedia.org/wiki/Distributed_hash_table">Distributed Hash Table</a>. Read the <a href="https://github.com/telehash/telehash.org/blob/master/protocol.md">telehash specification</a>.<br>
+<br>
+<h2>Advantages</h2>
+<ul>
+  <li>ATP is a streaming protocol. Apps can get started using transferred data while the transfer is in progress.</li>
+  <li>ATP protocol does not need a callback mechanism to signal
+successful transfer of chunks. The peer is responsible for requesting
+and receiving chunks, including retries.</li>
+  <li>The peer identifies data encoding, compression, and security techniques.</li>
+  <li>The peer dynamically changes chunk size, data encoding,
+compression, and security techniques in response to actual transfer
+speeds and efficiency.</li>
+  <li>ATP is compatible with 802.15.4 mesh network, Wifi, Bluetooth, and Ethernet networks, including TCP and UDP protocols.</li>
+  <li>ATP provides mini-memory allocation for the transferred data, including expiration.</li>
+  <li>ATP can transfer data sets up to 4 Gigibytes long, in chunks from 1 to 65K bytes long</li>
+  <li>Values optimized for small memory footprint<br>
+  </li>
+</ul>
+<h2>Getting Started</h2>
+Lead hash begins the ATP protocol by making a Transfer Request. Peer 1
+responds with Chunk Transfer requests. Peer 1 signals a completion
+status when all chucks are received.<br>
+<br>
+<img style="border: 0px solid ; width: 360px; height: 278px;" alt="State diagram showing sync/async conversation between lead peer and peer units" src="http://votsh.files.wordpress.com/2014/03/atp3.jpg"><br>
+<h3>File Transfer Request</h3>
+<ul>
+  <li>GUID - 16 bit value, genuinely unique identifier</li>
+  <li>Size - 32 bit unsigned value, number of 8 bit unsigned bytes to transfer</li>
+  <li>Time - 32 bit unsigned value, milliseconds since January 1, 1970 00:00:00 GMT<br>
+  </li>
+  <li>Expires - 16 bit unsigned value number of milliseconds after Time value  </li>
+  <li>Version - 8 bit value, version of the request schema<br>
+  </li>
+  <li>Descriptor - 8 bit unsigned value defining the content type: 0 = binary, 1 = video, 2 = ogg, 4 = text, 5 = JPG, 6 = PNG</li>
+  <li>Source - serving resource (Mesh, Point, URL), if mesh then the Source is the PAN value</li>
+  <li>Destination - consuming resource (Mesh, Point, URL), if mesh then the Destination is the PAN value</li>
+  <li>FileName - 16 character file name, or null if store to memory buffer<br>
+  </li>
+</ul>
+
+<h3>Chunk Transfer Request</h3>
+<ul>
+  <li>GUID - 16 bit value, genuinely unique identifier from File Transfer Request</li>
+  <li>Start byte offset - 32 bit unsigned value, starting address of transfer</li>
+  <li>Length - 8 bit unsigned value, quantity of 8 bit unsigned values to transfer</li>
+  <li>Transfer types - Four 2-bit values packed into 1 8-bit unsigned value:<br>
+PCT - Preferred compression technique - compression: 0 = none, 1 = RTE, 2 = Lempel<br>
+PET - Preferred encryption technique - 0 = none, 1 = encryption engine 1, 2 engine 2, etc.<br>
+PVT - Preferred verify technique - 0 = 8 bit checksum<br>
+Unused<br>
+  </li>
+</ul>
+
+<h3>Chunk Response<br>
+</h3>
+<ul>
+<li>GUID - 16 bit value, genuinely unique identifier from File Transfer Request</li><li>Status - Success, Failed during transit, failed checksum</li>
+  <li>Start byte offset - 32 bit unsigned value, starting address of transfer</li>
+  <li>Length - 8 bit unsigned value, quantity of 8 bit unsigned values to transfer</li>
+<li>Transfer types - Four 2-bit values packed into 1 8-bit unsigned value:<br>
+CT - Compression technique - compression: 0 = none, 1 = RTE, 2 = Lempel<br>
+ET - Encryption technique - 0 = none, 1 = encryption engine 1, 2 engine 2, etc.<br>
+VT - Verify technique - 0 = 8 bit checksum<br>
+
+Unused</li>
+  <li>Verify - 8 bit unsigned value<br>
+  </li>
+  <li>Data - series of 8 bit unsigned integer values<br>
+  </li>
+</ul>
+
+
+
+<h3>Status Codes</h3>
+NWK_SUCCESS - Operation successful<br>
+NWK_ERROR_STATUS - Unknown error<br>
+NWK_OUT_OF_MEMORY_STATUS - Buffer allocation failed<br>
+NWK_NO_ACK_STATUS - Network level acknoledgement not received<br>
+NWK_NO_ROUTE_STATUS - Route to destination address not found<br>
+NWK_PHY_CHANNEL_ACCESS_FAILURE_STATUS - Radio failed to gain access to channel<br>
+NWK_PHY_NO_ACK_STATUS - Physical level acknowledgement was not received<br>
+<h3>Description Codes</h3>
+ATP_Binary 0<br>
+ATP_Video 1<br>
+ATP_OGG 2<br>
+ATP_Text 3<br>
+ATP_Jpg 4<br>
+ATP_Png 5<br>
+ATP_Certificate 6<br>
+<br>
+The following are specific to the Votsh Waves project:<br>
+ATP_Show 7<br>
+ATP_Scene 8<br>
+ATP_Que 9<br>
+ATP_Vibrate 10<br>
+ATP_Flame 11<br>
+ATP_Vent 12<br>
+ATP_Blow 13<br>
+ATP_Button 14<br>
+ATP_Temperature 15<br>
+ATP_Battery 16<br>
+ATP_Power 17<br>
+ATP_SecurityKey 18<br>
+ATP_Color 19<br>
+<h3>APIs<br>
+</h3>
+TransferRequest ATPFactory.getNewTransferRequestInstance() - returns a transfer request object<br>
+<br>
+<h3>Transfer Request methods (TransferRequest)</h3>
+getGUID()<br>
+setGUID(value)<br>
+setGUID() - automatically creates GUID based on time, random, and PAN address<br>
+setSize()<br>
+getSize()<br>
+setTime()<br>
+getTime()<br>
+setExpires()<br>
+getExpires()<br>
+setVersion()<br>
+getVersion()<br>
+setContentDescriptor() - returns description of content 0 = binary, 1 = video, 2 = ogg, 4 = text, 5 = JPG, 6 = PNG<br>
+getContentDescriptor() - returns description of content 0 = binary, 1 = video, 2 = ogg, 4 = text, 5 = JPG, 6 = PNG<br>
+setSource()<br>
+getSource()<br>
+setDestination()<br>
+getDestination()<br>
+getStatus() - returns status code<br>
+getError() - returns error code<br>
+isTransferToBuffer() - returns true if transfer is to in-memory buffer, returns false if transfer is to card<br>
+setFileName() - 16 character file name, or null if store to memory buffer<br>
+getFileName()<br>
+<br>
+send() - sends request to the destination<br>
+delete() - removes object and related data<br>
+getBufferAddress() - returns address of the in-memory buffer<br>
+isTransferComplete() - returns true if all data transffered, false if still transferring data<br>
+getTransferStatus() - returns first node of a linked-list of a entries showing which portions of the transfer are complete<br>
+getTransferSize() - returns a 16 bit value defining the number of 8-bit unsigned integer values in the transfer<br>
+<br>
+<h3>Chunk Transfer Request methods (ChunkTransferRequest)</h3>
+getGUID()<br>
+getStartOffset()<br>
+setStartOffset()<br>
+getLength()<br>
+setLength()<br>
+getTransferTypes()<br>
+setTransferTypes()<br>
+send() - sends request to the destination<br>
+getStatus() - returns status code<br>
+getError() - returns error code<br>
+delete() - removes object and related data<br>
+<br>
+<h3>Chunk Response method (ChunkResponse)</h3>
+getGUID()<br>
+getTransferTypes()<br>
+setTransferTypes()<br>
+getStartOffset()<br>
+setStartOffset()<br>
+getLength()<br>
+setLength()<br>
+getVerify()<br>
+getData()<br>
+send() - sends request to the destination<br>
+verify() - verifies data using Verify value<br>
+getStatus() - returns status code<br>
+getError() - returns error code<br>
+delete() - removes object and related data<br>
+<h3>Time Check</h3>
+getTime() - get the current time from network of peers and lead peer.
+Returns 16 bit value, number of milliseconds since January 1, 1970
+00:00:00 GMT<br>
+<h2>Drivers</h2>
+AtmelMeshDriver - uses AVR2130 APIs<br>
+XBeeDriver - uses XBee connected to Arduino Micro, implements simple frame transmit protocol over PAN<br>
+<br>
+DriverFactory.getDriverInstance("AtmelMeshDriver", config);<br>
+<br>
+config is a struct with the following values<br>
+APP_ADDR<br>
+APP_CHANNEL<br>
+APP_PANID<br>
+APP_SENDING_INTERVAL<br>
+APP_ENDPOINT<br>
+APP_SECURITY_KEY<br>
+<h2>Resources</h2>
+<a href="AVR2130:%20Lightweight%20Mesh%20Developer%20Guide">Atmel AVR2130: Lightweight Mesh Developers Guide</a> (Adobe PDF document)<br>
+<a href="http://www.atmel.com/Images/doc8412.pdf">Atmel AVR2025: IEEE 802.15.4 MAC Software Package</a> - User Guide (Adobe PDF document)<br>
+<a href="http://www.atmel.com/images/atmel-42029-lightweight-mesh-getting-started-guide_application-note_avr2131.pdf">AVR42029: Lightweight Mesh Getting Started Guide Application Note</a> (Adobe PDF document)<br>
+<br>
+-end-<br>
+<br>
+
+
+</body></html>
