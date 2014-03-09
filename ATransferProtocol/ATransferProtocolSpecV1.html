@@ -1,5 +1,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html><head>
+
 <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type"><title>A Transfer Protocol (ATP) from Frank Cohen and Votsh.com</title></head><body>
 <h1>A Transfer Protocol (ATP)</h1>
 Design Specification Document<br>
@@ -21,13 +22,13 @@ through peers. If the Lead Peer sends data to Peer 1 the best route
 could be through Peer 2.<br>
 
 <br>
-ATP uses a "push" approach to transfer. For example, the lead peer says
+ATP uses a <a href="http://en.wikipedia.org/wiki/Push_technology">long-polling push</a> approach to initiate a transfer. For example, the lead peer says
 to peer 1, "Hey peer 1, I want to transfer data to you. Here is the
 reference to it, and the size of it, and a chunk size appropriate to
 this type of data and network". The lead peer then goes back to doing
 whatever else it wants.<br>
 <br>
-Peer 1 sends a request to the lead peer, "Hey lead peer, please give me
+Peer 1 sends a pull request to the lead peer, "Hey lead peer, please give me
 chunk #1 of the data". Peer 1 sends an additional request for chunks 2,
 3, and 4 to the lead peer concurrently. Peer 1 then receives a chunk
 and saves the chunk to the right place in a buffer or in a file in a
@@ -43,14 +44,17 @@ received.<br>
 <br>
 Peer 1 uses checksum values to certify each chunk was correctly received and stored.<br>
 <h2>What ATP Is Not</h2>
-ATP is for point-to-point transfer over a mesh network. ATP is not a
-distributed hashmap system. For that we recommend you look at <a href="http://telehash.org">telehash</a>.
+ATP is for point-to-point transfer over a mesh network from one peer to another peer. ATP is not a
+distributed hashmap system where the same data appears on multiple peers. For that we recommend you look at <a href="http://telehash.org">telehash</a>.
 Telehash sends and receives small encrypted bits of JSON (with optional
 binary payloads) via UDP using an efficient routing system based on <a href="http://en.wikipedia.org/wiki/Kademlia">Kademlia</a>, a proven and popular <a href="http://en.wikipedia.org/wiki/Distributed_hash_table">Distributed Hash Table</a>. Read the <a href="https://github.com/telehash/telehash.org/blob/master/protocol.md">telehash specification</a>.<br>
 <br>
 <h2>Advantages</h2>
 <ul>
   <li>ATP is a streaming protocol. Apps can get started using transferred data while the transfer is in progress.</li>
+  <li>ATP runs on top of multiple types of network stack, including <a href="http://www.atmel.com/tools/lightweight_mesh.aspx">LWM</a> and <a href="http://telehash.org">telehash</a>. ATP does not require the stack to provide reliability, out-of-order transmission, packet or stream based APIs.<br>
+  </li>
+
   <li>ATP protocol does not need a callback mechanism to signal
 successful transfer of chunks. The receiving peer is responsible for requesting
 and receiving chunks, including retries.</li>
@@ -72,25 +76,37 @@ status when all chucks are received.<br>
 <img style="border: 0px solid ; width: 360px; height: 278px;" alt="State diagram showing sync/async conversation between lead peer and peer units" src="http://votsh.files.wordpress.com/2014/03/atp3.jpg"><br>
 <h3>Transfer Request</h3>
 <ul>
-  <li>AUID - A Unique ID, 16 bit value, hash of the PAN ID, current time in milliseconds, and count of TransferRequest objects created</li>
+  <li>AUID - A Unique ID, 16 bit value, hash of the request type
+(first 2 bits set at 0,0), PAN ID, current time in milliseconds, and
+count of TransferRequest objects created. While a hash introduces the
+possibility of collissions, AUID is a hash for situations where a peer
+crashed or went offline temporarily during a transfer session.<br>
+</li>
+  <li>Version - 8 bit value, version of the request schema</li>
   <li>Size - 32 bit unsigned value, number of 8 bit unsigned bytes to transfer</li>
+
   <li>Time - 32 bit unsigned value, milliseconds since January 1, 1970 00:00:00 GMT<br>
   </li>
   <li>Expires - 16 bit unsigned value number of milliseconds after Time value  </li>
-  <li>Version - 8 bit value, version of the request schema<br>
-  </li>
-  <li>Descriptor - 8 bit unsigned value defining the content type: 0 = binary, 1 = video, 2 = ogg, 4 = text, 5 = JPG, 6 = PNG</li>
-  <li>Source - serving resource (Mesh, Point, URL), if mesh then the Source is the PAN value</li>
-  <li>Destination - consuming resource (Mesh, Point, URL), if mesh then the Destination is the PAN value</li>
-  <li>FileName - 16 character file name, or null if store to memory buffer<br>
+  
+  <li>Descriptor - 5 character array of abbreviated MIME types, see <a href="http://www.abbreviations.com/acronyms/MIMETYPES">http://www.abbreviations.com/acronyms/MIMETYPES</a><br>
+</li>
+  <li>Source - serving resource (Mesh, Point, URL), if mesh then the Source is the PAN value, used only by the receiving peer<br>
+</li>
+  <li>Destination - consuming resource (Mesh, Point, URL), if
+mesh then the Destination is the PAN value, used only by the sending
+peer<br>
+</li>
+  <li>FileName - 16 character file name with null terminator, or null if store to memory buffer<br>
   </li>
 </ul>
 
 <h3>Chunk Transfer Request</h3>
 <ul>
-  <li>AUID - 16 bit value, a unique identifier from Transfer Request</li>
+  <li>AUID - 16 bit value, a unique identifier from Transfer Request, with the first 2 bits set at 0,1, identifying the request type<br>
+</li>
   <li>Start byte offset - 32 bit unsigned value, starting address of transfer</li>
-  <li>Length - 16 bit unsigned value, quantity of 8 bit unsigned values to transfer</li>
+  <li>Length - 16 bit unsigned value, quantity of 8 bit unsigned values to transfer, if compression is used the length is the quantity of values after compression</li>
   <li>Transfer types - Four 2-bit values packed into 1 8-bit unsigned value:<br>
 PCT - Preferred compression technique - compression: 0 = none, 1 = RTE, 2 = Lempel<br>
 PET - Preferred encryption technique - 0 = none, 1 = encryption engine 1, 2 engine 2, etc.<br>
@@ -102,9 +118,13 @@ Unused<br>
 <h3>Chunk Response<br>
 </h3>
 <ul>
-<li>AUID - 16 bit value, a unique identifier from Transfer Request</li><li>Status - Success, Failed during transit, failed checksum</li>
+<li>AUID - 16 bit value, a unique identifier from Transfer Request, , with the first 2 bits set at 1,0 identifying the response type</li><li>Status - Success, Failed during transit, failed checksum</li>
   <li>Start byte offset - 32 bit unsigned value, starting address of transfer</li>
-  <li>Length - 16 bit unsigned value, quantity of 8 bit unsigned values to transfer</li>
+  <li>Length
+- 16 bit unsigned value, quantity of 8 bit unsigned values to transfer,
+if compression is used the length is the quantity of values after
+compression<br>
+</li>
 <li>Transfer types - Four 2-bit values packed into 1 8-bit unsigned value:<br>
 CT - Compression technique - compression: 0 = none, 1 = RTE, 2 = Lempel<br>
 ET - Encryption technique - 0 = none, 1 = encryption engine 1, 2 engine 2, etc.<br>
@@ -181,8 +201,10 @@ getFileName()<br>
 send() - sends request to the destination<br>
 delete() - removes object and related data<br>
 getBufferAddress() - returns address of the in-memory buffer, meaningful only to the peer<br>
-isTransferComplete() - returns true if all data transffered, false if still transferring data<br>
-getTransferStatus() - returns first node of a linked-list of a entries showing which portions of the transfer are complete, meaningful only to the receiving peer<br>
+isTransferComplete() - returns true if all data transffered, false if still transferring data<br>getTransferStatus()
+- returns first node of a linked-list of a entries showing which
+portions of the transfer are complete, meaningful only to the receiving
+peer<br>
 getTransferSize() - returns a 16 bit value defining the number of 8-bit unsigned integer values in the transfer<br>
 <br>
 <h3>Chunk Transfer Request methods (ChunkTransferRequest)</h3>

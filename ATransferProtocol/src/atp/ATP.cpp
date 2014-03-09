@@ -30,5 +30,8 @@ You should have received a copy of the GNU General Public License
 along with ATP.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-
+ATP_Init( XBee );
+MakeSampleData( 1028 bytes of data );
+ATP_TransferRequest( sampledata, remotexbee );
+waitTillTransferred();
+done();
