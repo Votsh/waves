@@ -220,7 +220,8 @@ delete() - removes object and related data<br>
 getTime() - get the current time from network of peers and lead peer.
 Returns 16 bit value, number of milliseconds since January 1, 1970
 00:00:00 GMT<br>
-<h2>Drivers</h2>
+<h2>Radio Driver (RadioDriver)<br>
+</h2>
 AtmelMeshDriver - uses AVR2130 APIs<br>
 XBeeDriver - uses XBee connected to Arduino Micro, implements simple frame transmit protocol over PAN<br>
 <br>
@@ -233,6 +234,13 @@ APP_PANID<br>
 APP_SENDING_INTERVAL<br>
 APP_ENDPOINT<br>
 APP_SECURITY_KEY<br>
+<br>
+send()<br>
+
+receive()<br>
+
+getError()<br>
+<br>
 <h2>Resources</h2>
 <a href="AVR2130:%20Lightweight%20Mesh%20Developer%20Guide">Atmel AVR2130: Lightweight Mesh Developers Guide</a> (Adobe PDF document)<br>
 <a href="http://www.atmel.com/Images/doc8412.pdf">Atmel AVR2025: IEEE 802.15.4 MAC Software Package</a> - User Guide (Adobe PDF document)<br>
