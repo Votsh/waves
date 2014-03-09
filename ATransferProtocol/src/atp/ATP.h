@@ -28,13 +28,29 @@ You should have received a copy of the GNU General Public License
 along with ATP.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _YourHeader
-#define _YourHeader
+#ifndef _ATP_H_
+#define _ATP_H_
+
+
+/*- Includes ---------------------------------------------------------------*/
+
+#include "ChunkResponse.h"
+#include "ChunkTransferRequest.h"
+#include "RadioDriver.h"
+#include "StatusCodes.h"
+#include "TransferReqest.h"
+
+/*- Definitions ------------------------------------------------------------*/
+
+#define LOGLEVEL LOG_LEVEL_DEBUG
+#define baudrate 9600
+
+/*- Types ------------------------------------------------------------------*/
+/*- Variables --------------------------------------------------------------*/
+/*- Prototypes -------------------------------------------------------------*/
 
 
 
 
 
-
-
-#endif 
+#endif

@@ -30,21 +30,35 @@ You should have received a copy of the GNU General Public License
 along with ATP.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _RD_H_
-#define _RD_H_
+#ifndef _CTR_H_
+#define _CTR_H_
 
 
 /*- Includes ---------------------------------------------------------------*/
 
 #include "ChunkResponse.h"
-#include "ChunkTransferRequest.h"
+#include "ChunkRequest.h"
 #include "RadioDriver.h"
 #include "StatusCodes.h"
 #include "TransferReqest.h"
 
 /*- Definitions ------------------------------------------------------------*/
+
+
 /*- Types ------------------------------------------------------------------*/
+
+typedef struct ATP_ChunkRequest_t
+{
+  uint16_t     AUID;
+  uint32_t     Start;
+  uint16_t     Length;
+  uint8_t      TransferTypes;
+} ATP_ChunkResponse_t;
+
+# AUID - 16 bit value, a unique identifier from Transfer Request, with the first 2 bits set at 0,1, identifying the request type# Start byte offset - 32 bit unsigned value, starting address of transfer# Length - 16 bit unsigned value, quantity of 8 bit unsigned values to transfer, if compression is used the length is the quantity of values after compression# Transfer types - Four 2-bit values packed into 1 8-bit unsigned value:PCT - Preferred compression technique - compression: 0 = none, 1 = RTE, 2 = LempelPET - Preferred encryption technique - 0 = none, 1 = encryption engine 1, 2 engine 2, etc.PVT - Preferred verify technique - 0 = 8 bit checksumUnused
+
 /*- Variables --------------------------------------------------------------*/
 /*- Prototypes -------------------------------------------------------------*/
+
 
 #endif

@@ -31,4 +31,11 @@ along with ATP.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 
+/*- Includes ---------------------------------------------------------------*/
+/*- Variables --------------------------------------------------------------*/
+/*- Implementations --------------------------------------------------------*/
 
+
+getAUID()setAUID()getStartOffset()setStartOffset()getLength()setLength()getTransferTypes()setTransferTypes()send() - sends request to the destinationgetStatus() - returns status codegetError() - returns error codedelete() - removes object and related data
+
+getNetworkTime(source);

@@ -30,8 +30,42 @@ You should have received a copy of the GNU General Public License
 along with ATP.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-ATP_Init( XBee );
-MakeSampleData( 1028 bytes of data );
-ATP_TransferRequest( sampledata, remotexbee );
-waitTillTransferred();
-done();
+/*- Includes ---------------------------------------------------------------*/
+
+#include "ATP.h"
+#include "ChunkResponse.h"
+#include "ChunkTransferRequest.h"
+#include "RadioDriver.h"
+#include "StatusCodes.h"
+#include "TransferReqest.h"
+#include "../Logging/Logging.h"
+
+/*- Variables --------------------------------------------------------------*/
+
+/*- Implementations --------------------------------------------------------*/
+
+/*
+ @brief Initializes ATP modules and data structures
+*/
+
+void ATP_Init(void)
+{
+    Log.Init(LOGLEVEL, baudrate);
+    Log.Info("A Transfer Protocol (ATP)"CR);
+}
+
+/*
+ @brief Main used for testing
+*/
+
+void ATP_Main(void)
+{
+
+	ATP_Init( XBee );
+	MakeSampleData( 1028 bytes of data );
+	ATP_TransferRequest( sampledata, remotexbee );
+	waitTillTransferred();
+	done();
+	getTime(source);
+
+}

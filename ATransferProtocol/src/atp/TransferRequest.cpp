@@ -30,5 +30,23 @@ You should have received a copy of the GNU General Public License
 along with ATP.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/*
+
+TransferRequest provides a "push" from the lead peer to a peer. On the lead
+peer the methods initiate the request to the peer. On the receiving peer, the
+methods provide the App with malloc-style access to the transferred data.
+
+See the TransferRequest.h file for definitions of the structs used by the methods.
+
+*/
+
+
+/*- Includes ---------------------------------------------------------------*/
+/*- Variables --------------------------------------------------------------*/
+/*- Implementations --------------------------------------------------------*/
+
+
+getAUID()setAUID(value)setAUID() - automatically creates AUID based on time, random, and PAN addresssetSize()getSize()setTime()getTime()setExpires()getExpires()setVersion()getVersion()setContentDescriptor() - description of content 0 = binary, 1 = video, 2 = ogg, 4 = text, 5 = JPG, 6 = PNGgetContentDescriptor() - returns description of content 0 = binary, 1 = video, 2 = ogg, 4 = text, 5 = JPG, 6 = PNGsetSource()getSource()setDestination()getDestination()getStatus() - returns status codegetError() - returns error codeisTransferToBuffer() - returns true if transfer is to in-memory buffer, returns false if transfer is to cardsetFileName() - 16 character file name, or null if store to memory buffergetFileName()send() - sends request to the destinationdelete() - removes object and related datagetBufferAddress() - returns address of the in-memory buffer, meaningful only to the peerisTransferComplete() - returns true if all data transffered, false if still transferring datagetTransferStatus() - returns first node of a linked-list of a entries showing which portions of the transfer are complete, meaningful only to the receiving peergetTransferSize() - returns a 16 bit value defining the number of 8-bit unsigned integer values in the transfer
+
 
 

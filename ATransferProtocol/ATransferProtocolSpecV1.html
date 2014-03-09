@@ -101,7 +101,7 @@ peer<br>
   </li>
 </ul>
 
-<h3>Chunk Transfer Request</h3>
+<h3>Chunk Request</h3>
 <ul>
   <li>AUID - 16 bit value, a unique identifier from Transfer Request, with the first 2 bits set at 0,1, identifying the request type<br>
 </li>
@@ -139,37 +139,13 @@ Unused</li>
 
 
 
-<h3>Status Codes</h3>
-NWK_SUCCESS - Operation successful<br>
-NWK_ERROR_STATUS - Unknown error<br>
-NWK_OUT_OF_MEMORY_STATUS - Buffer allocation failed<br>
-NWK_NO_ACK_STATUS - Network level acknoledgement not received<br>
-NWK_NO_ROUTE_STATUS - Route to destination address not found<br>
-NWK_PHY_CHANNEL_ACCESS_FAILURE_STATUS - Radio failed to gain access to channel<br>
-NWK_PHY_NO_ACK_STATUS - Physical level acknowledgement was not received<br>
-<h3>Description Codes</h3>
-ATP_Binary 0<br>
-ATP_Video 1<br>
-ATP_OGG 2<br>
-ATP_Text 3<br>
-ATP_Jpg 4<br>
-ATP_Png 5<br>
-ATP_Certificate 6<br>
-<br>
-The following are specific to the Votsh Waves project:<br>
-ATP_Show 7<br>
-ATP_Scene 8<br>
-ATP_Que 9<br>
-ATP_Vibrate 10<br>
-ATP_Flame 11<br>
-ATP_Vent 12<br>
-ATP_Blow 13<br>
-ATP_Button 14<br>
-ATP_Temperature 15<br>
-ATP_Battery 16<br>
-ATP_Power 17<br>
-ATP_SecurityKey 18<br>
-ATP_Color 19<br>
+<h3>Status Codes</h3>ATP_SUCCESS - Operation successful<br>
+ATP_ERROR_STATUS - Unknown error<br>
+ATP_OUT_OF_MEMORY_STATUS - Buffer allocation failed<br>
+ATP_NO_ACK_STATUS - Network level acknoledgement not received<br>
+ATP_NO_ROUTE_STATUS - Route to destination address not found<br>
+ATP_PHY_CHANNEL_ACCESS_FAILURE_STATUS - Radio failed to gain access to channel<br>
+ATP_PHY_NO_ACK_STATUS - Physical level acknowledgement was not received<br>
 <h3>APIs<br>
 </h3>
 TransferRequest ATPFactory.getNewTransferRequestInstance() - returns a transfer request object<br>
@@ -207,7 +183,7 @@ portions of the transfer are complete, meaningful only to the receiving
 peer<br>
 getTransferSize() - returns a 16 bit value defining the number of 8-bit unsigned integer values in the transfer<br>
 <br>
-<h3>Chunk Transfer Request methods (ChunkTransferRequest)</h3>
+<h3>Chunk Request methods (ChunkRequest)</h3>
 getAUID()<br>
 setAUID()<br>
 getStartOffset()<br>
