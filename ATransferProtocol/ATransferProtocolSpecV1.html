@@ -1,5 +1,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html><head><meta content="text/html; charset=ISO-8859-1" http-equiv="content-type"><title>A Transfer Protocol (ATP) from Frank Cohen and Votsh.com</title></head><body>
+<html><head>
+<meta content="text/html; charset=ISO-8859-1" http-equiv="content-type"><title>A Transfer Protocol (ATP) from Frank Cohen and Votsh.com</title></head><body>
 <h1>A Transfer Protocol (ATP)</h1>
 Design Specification Document<br>
 <a href="http://votsh.com/bio-for-frank-cohen/">Frank Cohen</a>, fcohen@votsh.com<br>
@@ -7,7 +8,7 @@ Early Draft, March 8, 2014<br>
 <h2>Goal</h2>
 Easy and efficient file transfer between microcontrollers over a mesh or point-to-point radio network.<br>
 <h2>Concept</h2>
-The Votsh Waves project distributes audio and light show information
+The <a href="http://votsh.com">Votsh Waves</a> project distributes audio and light show information
 from a server through a lead-peer microcontroller to peer
 microcontrollers. The peers use Atmel 802.15.4 radios in the
 ATmega256RFR2 chip to form a mesh network, or XBee radios.<br>
@@ -51,7 +52,7 @@ binary payloads) via UDP using an efficient routing system based on <a href="htt
 <ul>
   <li>ATP is a streaming protocol. Apps can get started using transferred data while the transfer is in progress.</li>
   <li>ATP protocol does not need a callback mechanism to signal
-successful transfer of chunks. The peer is responsible for requesting
+successful transfer of chunks. The receiving peer is responsible for requesting
 and receiving chunks, including retries.</li>
   <li>The peer identifies data encoding, compression, and security techniques.</li>
   <li>The peer dynamically changes chunk size, data encoding,
@@ -69,9 +70,9 @@ responds with Chunk Transfer requests. Peer 1 signals a completion
 status when all chucks are received.<br>
 <br>
 <img style="border: 0px solid ; width: 360px; height: 278px;" alt="State diagram showing sync/async conversation between lead peer and peer units" src="http://votsh.files.wordpress.com/2014/03/atp3.jpg"><br>
-<h3>File Transfer Request</h3>
+<h3>Transfer Request</h3>
 <ul>
-  <li>GUID - 16 bit value, genuinely unique identifier</li>
+  <li>AUID - A Unique ID, 16 bit value, hash of the PAN ID, current time in milliseconds, and count of TransferRequest objects created</li>
   <li>Size - 32 bit unsigned value, number of 8 bit unsigned bytes to transfer</li>
   <li>Time - 32 bit unsigned value, milliseconds since January 1, 1970 00:00:00 GMT<br>
   </li>
@@ -87,9 +88,9 @@ status when all chucks are received.<br>
 
 <h3>Chunk Transfer Request</h3>
 <ul>
-  <li>GUID - 16 bit value, genuinely unique identifier from File Transfer Request</li>
+  <li>AUID - 16 bit value, a unique identifier from Transfer Request</li>
   <li>Start byte offset - 32 bit unsigned value, starting address of transfer</li>
-  <li>Length - 8 bit unsigned value, quantity of 8 bit unsigned values to transfer</li>
+  <li>Length - 16 bit unsigned value, quantity of 8 bit unsigned values to transfer</li>
   <li>Transfer types - Four 2-bit values packed into 1 8-bit unsigned value:<br>
 PCT - Preferred compression technique - compression: 0 = none, 1 = RTE, 2 = Lempel<br>
 PET - Preferred encryption technique - 0 = none, 1 = encryption engine 1, 2 engine 2, etc.<br>
@@ -101,9 +102,9 @@ Unused<br>
 <h3>Chunk Response<br>
 </h3>
 <ul>
-<li>GUID - 16 bit value, genuinely unique identifier from File Transfer Request</li><li>Status - Success, Failed during transit, failed checksum</li>
+<li>AUID - 16 bit value, a unique identifier from Transfer Request</li><li>Status - Success, Failed during transit, failed checksum</li>
   <li>Start byte offset - 32 bit unsigned value, starting address of transfer</li>
-  <li>Length - 8 bit unsigned value, quantity of 8 bit unsigned values to transfer</li>
+  <li>Length - 16 bit unsigned value, quantity of 8 bit unsigned values to transfer</li>
 <li>Transfer types - Four 2-bit values packed into 1 8-bit unsigned value:<br>
 CT - Compression technique - compression: 0 = none, 1 = RTE, 2 = Lempel<br>
 ET - Encryption technique - 0 = none, 1 = encryption engine 1, 2 engine 2, etc.<br>
@@ -154,9 +155,9 @@ ATP_Color 19<br>
 TransferRequest ATPFactory.getNewTransferRequestInstance() - returns a transfer request object<br>
 <br>
 <h3>Transfer Request methods (TransferRequest)</h3>
-getGUID()<br>
-setGUID(value)<br>
-setGUID() - automatically creates GUID based on time, random, and PAN address<br>
+getAUID()<br>
+setAUID(value)<br>
+setAUID() - automatically creates AUID based on time, random, and PAN address<br>
 setSize()<br>
 getSize()<br>
 setTime()<br>
@@ -165,7 +166,7 @@ setExpires()<br>
 getExpires()<br>
 setVersion()<br>
 getVersion()<br>
-setContentDescriptor() - returns description of content 0 = binary, 1 = video, 2 = ogg, 4 = text, 5 = JPG, 6 = PNG<br>
+setContentDescriptor() - description of content 0 = binary, 1 = video, 2 = ogg, 4 = text, 5 = JPG, 6 = PNG<br>
 getContentDescriptor() - returns description of content 0 = binary, 1 = video, 2 = ogg, 4 = text, 5 = JPG, 6 = PNG<br>
 setSource()<br>
 getSource()<br>
@@ -179,13 +180,14 @@ getFileName()<br>
 <br>
 send() - sends request to the destination<br>
 delete() - removes object and related data<br>
-getBufferAddress() - returns address of the in-memory buffer<br>
+getBufferAddress() - returns address of the in-memory buffer, meaningful only to the peer<br>
 isTransferComplete() - returns true if all data transffered, false if still transferring data<br>
-getTransferStatus() - returns first node of a linked-list of a entries showing which portions of the transfer are complete<br>
+getTransferStatus() - returns first node of a linked-list of a entries showing which portions of the transfer are complete, meaningful only to the receiving peer<br>
 getTransferSize() - returns a 16 bit value defining the number of 8-bit unsigned integer values in the transfer<br>
 <br>
 <h3>Chunk Transfer Request methods (ChunkTransferRequest)</h3>
-getGUID()<br>
+getAUID()<br>
+setAUID()<br>
 getStartOffset()<br>
 setStartOffset()<br>
 getLength()<br>
@@ -197,8 +199,9 @@ getStatus() - returns status code<br>
 getError() - returns error code<br>
 delete() - removes object and related data<br>
 <br>
-<h3>Chunk Response method (ChunkResponse)</h3>
-getGUID()<br>
+<h3>Chunk Response methods (ChunkResponse)</h3>
+getAUID()<br>
+setAUID()<br>
 getTransferTypes()<br>
 setTransferTypes()<br>
 getStartOffset()<br>
@@ -212,7 +215,8 @@ verify() - verifies data using Verify value<br>
 getStatus() - returns status code<br>
 getError() - returns error code<br>
 delete() - removes object and related data<br>
-<h3>Time Check</h3>
+<h3>Network Time methods (TimeCheck)<br>
+</h3>
 getTime() - get the current time from network of peers and lead peer.
 Returns 16 bit value, number of milliseconds since January 1, 1970
 00:00:00 GMT<br>
