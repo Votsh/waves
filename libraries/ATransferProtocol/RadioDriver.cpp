@@ -1,4 +1,5 @@
 /*
+
 A Transfer Protocol (ATP)
 
 Easy and efficient file transfer between microcontrollers
@@ -29,16 +30,8 @@ You should have received a copy of the GNU General Public License
 along with ATP.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <ATP.h>
 
-ATP myATP = ATP();  // A Transfer Protocol
 
-void setup() {
-  ATP.init();
-  ATP.test();
-}
-
-void loop() {
-  // put your main code here, to run repeatedly:
-
-}
+/*- Includes ---------------------------------------------------------------*/
+/*- Variables --------------------------------------------------------------*/
+/*- Implementations --------------------------------------------------------*/

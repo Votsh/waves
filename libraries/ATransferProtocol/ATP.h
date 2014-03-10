@@ -1,10 +1,9 @@
 /*
+
 A Transfer Protocol (ATP)
 
 Easy and efficient file transfer between microcontrollers
 over a mesh or point-to-point radio network.
-
-by Frank Cohen, fcohen@votsh.com
 
 ATP specification document is at:
 https://github.com/Votsh/waves/tree/master/ATransferProtocol/ATransferProtocolSpecV1.html
@@ -29,16 +28,29 @@ You should have received a copy of the GNU General Public License
 along with ATP.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <ATP.h>
+#ifndef _ATP_H_
+#define _ATP_H_
 
-ATP myATP = ATP();  // A Transfer Protocol
 
-void setup() {
-  ATP.init();
-  ATP.test();
-}
+/*- Includes ---------------------------------------------------------------*/
 
-void loop() {
-  // put your main code here, to run repeatedly:
+#include "ChunkResponse.h"
+#include "ChunkTransferRequest.h"
+#include "RadioDriver.h"
+#include "StatusCodes.h"
+#include "TransferReqest.h"
 
-}
+/*- Definitions ------------------------------------------------------------*/
+
+#define LOGLEVEL LOG_LEVEL_DEBUG
+#define baudrate 9600
+
+/*- Types ------------------------------------------------------------------*/
+/*- Variables --------------------------------------------------------------*/
+/*- Prototypes -------------------------------------------------------------*/
+
+
+
+
+
+#endif

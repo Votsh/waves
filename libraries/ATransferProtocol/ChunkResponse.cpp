@@ -1,4 +1,5 @@
 /*
+
 A Transfer Protocol (ATP)
 
 Easy and efficient file transfer between microcontrollers
@@ -29,16 +30,10 @@ You should have received a copy of the GNU General Public License
 along with ATP.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <ATP.h>
+/*- Includes ---------------------------------------------------------------*/
+/*- Variables --------------------------------------------------------------*/
+/*- Implementations --------------------------------------------------------*/
 
-ATP myATP = ATP();  // A Transfer Protocol
 
-void setup() {
-  ATP.init();
-  ATP.test();
-}
-
-void loop() {
-  // put your main code here, to run repeatedly:
-
-}
+getAUID()setAUID()getTransferTypes()setTransferTypes()getStartOffset()setStartOffset()getLength()setLength()getVerify()getData()send() - sends request to the destinationverify() - verifies data using Verify valuegetStatus() - returns status codegetError() - returns error codedelete() - removes object and related data
+getNetworkTime(source);
