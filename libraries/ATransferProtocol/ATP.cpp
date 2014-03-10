@@ -5,7 +5,7 @@ A Transfer Protocol (ATP)
 Easy and efficient file transfer between microcontrollers
 over a mesh or point-to-point radio network.
 
-by Frank Cohen, fcohen@votsh.com
+by Frank Cohen, fcohen@votsh.com web site
 
 ATP specification document is at:
 https://github.com/Votsh/waves/tree/master/ATransferProtocol/ATransferProtocolSpecV1.html
