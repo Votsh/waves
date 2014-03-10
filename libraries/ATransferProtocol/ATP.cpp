@@ -45,20 +45,29 @@ along with ATP.  If not, see <http://www.gnu.org/licenses/>.
 /*- Implementations --------------------------------------------------------*/
 
 /*
+ @brief Constructor
+*/
+
+ATP::ATP(void)
+{
+	// Coming soon
+}
+
+/*
  @brief Initializes ATP modules and data structures
 */
 
-void ATP_Init(void)
+void ATP::Init(void)
 {
     Log.Init(LOGLEVEL, baudrate);
     Log.Info("A Transfer Protocol (ATP)"CR);
 }
 
 /*
- @brief Main used for testing
+ @brief Used for testing
 */
 
-void ATP_Main(void)
+void ATP::Test(void)
 {
 
 	ATP_Init( XBee );
