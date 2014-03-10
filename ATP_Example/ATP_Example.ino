@@ -29,16 +29,29 @@ You should have received a copy of the GNU General Public License
 along with ATP.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <ATP.h>
+#include "Arduino.h"
+#include "ATP.h"
+#include "Logging.h"
 
-ATP myATP = ATP();  // A Transfer Protocol
+ATP atp = ATP();
+#define baudrate 9600
+int firsttime = 1;
 
 void setup() {
-  ATP.init();
-  ATP.test();
+  Serial.begin(baudrate);
+   // while the serial stream is not open, do nothing:
+   while (!Serial) ;
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
 
+  if (firsttime==1)
+  {
+    firsttime=0;
+    delay(3000);
+    atp.Init();
+    atp.Test();
+  }
+  
+  delay(100);
 }

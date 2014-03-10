@@ -30,8 +30,42 @@ You should have received a copy of the GNU General Public License
 along with ATP.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-
 /*- Includes ---------------------------------------------------------------*/
+
+#include "Arduino.h"
+#include "ATP.h"
+#include "Logging.h"
+
 /*- Variables --------------------------------------------------------------*/
+
 /*- Implementations --------------------------------------------------------*/
+
+/*
+ @brief Initializes ATP modules and data structures
+*/
+
+ATP::ATP(void){}
+
+void ATP::Init(void)
+{
+    Log.Init(LOGLEVEL, baudrate);
+    Log.Info("A Transfer Protocol (ATP)"CR);
+}
+
+/*
+ @brief Used for testing
+*/
+
+void ATP::Test(void)
+{
+/*
+	ATP_Init( XBee );
+	MakeSampleData( 1028 bytes of data );
+	ATP_TransferRequest( sampledata, remotexbee );
+	waitTillTransferred();
+	done();
+	getTime(source);
+*/
+	Log.Info("Test");
+
+}
