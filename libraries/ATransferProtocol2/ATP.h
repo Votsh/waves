@@ -35,6 +35,8 @@ along with ATP.  If not, see <http://www.gnu.org/licenses/>.
 /*- Includes ---------------------------------------------------------------*/
 
 #include "Arduino.h"
+#include "RadioDriver.h"
+#include "StatusCodes.h"
 
 /*- Definitions ------------------------------------------------------------*/
 
@@ -44,8 +46,8 @@ along with ATP.  If not, see <http://www.gnu.org/licenses/>.
 class ATP
 {
   public:
-    ATP(void);
-    void Init(void);
+    ATP( void );
+    void Init( char * );
     void Test(void);
   private:
 };

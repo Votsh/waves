@@ -1,4 +1,5 @@
 /*
+
 A Transfer Protocol (ATP)
 
 Easy and efficient file transfer between microcontrollers
@@ -29,29 +30,39 @@ You should have received a copy of the GNU General Public License
 along with ATP.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef _RD_H_
+#define _RD_H_
+
+
+/*- Includes ---------------------------------------------------------------*/
+
 #include "Arduino.h"
+#include "StatusCodes.h"
 #include "ATP.h"
 #include "Logging.h"
 
-ATP atp = ATP();
-#define baudrate 9600
-int firsttime = 1;
+/*- Definitions ------------------------------------------------------------*/
+/*- Types ------------------------------------------------------------------*/
+/*- Variables --------------------------------------------------------------*/
+/*- Prototypes -------------------------------------------------------------*/
 
-void setup() {
-  Serial.begin(baudrate);
-   // while the serial stream is not open, do nothing:
-   while (!Serial) ;
-}
+class RadioDriver
+{
+  public:
+    RadioDriver( char * );
+    void serviceRadio();					// Called to service incoming data
+	void Send( unsigned char * ); 		 	// Send data over the radio
+	unsigned char * getReceived(); 			// Get a pointer to the received data
+	unsigned int getStatus();
 
-void loop() {
+// Get a pointer to the received data
 
-  if (firsttime==1)
-  {
-    firsttime=0;
-    delay(3000);
-    atp.Init("XBEE");
-    atp.Test();
-  }
-  
-  delay(100);
-}
+};
+
+
+
+
+
+
+
+#endif

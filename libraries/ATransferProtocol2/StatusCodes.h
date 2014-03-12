@@ -30,59 +30,36 @@ You should have received a copy of the GNU General Public License
 along with ATP.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+
+#ifndef _SC_H_
+#define _SC_H_
+
 /*- Includes ---------------------------------------------------------------*/
 
-#include "Arduino.h"
-#include "ATP.h"
-#include "Logging.h"
 #include "RadioDriver.h"
 #include "StatusCodes.h"
 
+/*- Definitions ------------------------------------------------------------*/
+
+typedef enum
+{
+  ATP_SUCCESS_STATUS                      = 0x00,
+  ATP_ERROR_STATUS                        = 0x01,
+  ATP_OUT_OF_MEMORY_STATUS                = 0x02,
+
+  ATP_NO_ACK_STATUS                       = 0x10,
+  ATP_NO_ROUTE_STATUS                     = 0x11,
+
+  ATP_PHY_CHANNEL_ACCESS_FAILURE_STATUS   = 0x20,
+  ATP_PHY_NO_ACK_STATUS                   = 0x21,
+} ATP_Status_t;
+
+/*
+ATP_SUCCESS - Operation successfulATP_ERROR_STATUS - Unknown errorATP_OUT_OF_MEMORY_STATUS - Buffer allocation failedATP_NO_ACK_STATUS - Network level acknoledgement not receivedATP_NO_ROUTE_STATUS - Route to destination address not foundATP_PHY_CHANNEL_ACCESS_FAILURE_STATUS - Radio failed to gain access to channelATP_PHY_NO_ACK_STATUS - Physical level acknowledgement was not received
+*/
+
+/*- Types ------------------------------------------------------------------*/
 /*- Variables --------------------------------------------------------------*/
+/*- Prototypes -------------------------------------------------------------*/
 
-/*- Implementations --------------------------------------------------------*/
-
-/*
- @brief Initializes ATP modules and data structures
-*/
-
-ATP::ATP(void){}
-
-void ATP::Init( char * driverType )
-{
-    Log.Init(LOGLEVEL, baudrate);
-    Log.Info("A Transfer Protocol (ATP)"CR);
-}
-
-/*
- @brief Used for testing
-*/
-
-void ATP::Test(void)
-{
-	Log.Info("ATP Test"CR);
-	
-	RadioDriver rd = RadioDriver( "XBEE" );
-	if ( rd.getStatus() ) 
-	{
-		Log.Debug("RadioDriver: Main, status is 1"CR);	
-	}
-	else
-	{
-		Log.Debug("RadioDriver: Main, status is 0"CR);			
-	}	
-
-	/*
-	ATP_Init( "XBee" );
-	MakeSampleData( 1028 bytes of data );
-	ATP_TransferRequest( sampledata, remotexbee );
-	waitTillTransferred();
-	done();
-	getTime(source);
-	*/
-
-}
-
-
-
-
+#endif
