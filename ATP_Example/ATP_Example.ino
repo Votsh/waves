@@ -32,6 +32,7 @@ along with ATP.  If not, see <http://www.gnu.org/licenses/>.
 #include "Arduino.h"
 #include "ATP.h"
 #include "Logging.h"
+#include <SoftwareSerial.h>
 
 ATP atp = ATP();
 #define baudrate 9600

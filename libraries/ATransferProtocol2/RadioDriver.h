@@ -40,6 +40,7 @@ along with ATP.  If not, see <http://www.gnu.org/licenses/>.
 #include "StatusCodes.h"
 #include "ATP.h"
 #include "Logging.h"
+#include <SoftwareSerial.h>
 
 /*- Definitions ------------------------------------------------------------*/
 /*- Types ------------------------------------------------------------------*/
@@ -51,8 +52,8 @@ class RadioDriver
   public:
     RadioDriver( char * );
     void serviceRadio();					// Called to service incoming data
-	void Send( unsigned char * ); 		 	// Send data over the radio
-	unsigned char * getReceived(); 			// Get a pointer to the received data
+	void Send( char * ); 		 	// Send data over the radio
+	char * getReceived(); 			// Get a pointer to the received data
 	unsigned int getStatus();
 
 // Get a pointer to the received data

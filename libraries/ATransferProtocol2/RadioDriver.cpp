@@ -38,12 +38,12 @@ along with ATP.  If not, see <http://www.gnu.org/licenses/>.
 #include "Logging.h"
 #include "RadioDriver.h"
 
-
 /*- Variables --------------------------------------------------------------*/
 
 // For XBee mesh and point-to-point radio network
 SoftwareSerial XBeeOnBreadboard(11, 9); // RX, TX
 int status = 0;		// 1 = normal, 2 = exception
+char recbuf[16] = "123456789012345";	// Receive buffer
 
 /*- Implementations --------------------------------------------------------*/
 
@@ -88,14 +88,7 @@ RadioDriver::RadioDriver( char * driverType ){
 		return;
 	}
 
-
-
     XBeeOnBreadboard.begin(9600);
-    XBeeOnBreadboard.println("Hello, world?");
-
-
-
-
 }
 
 unsigned int RadioDriver::getStatus(){
@@ -103,19 +96,25 @@ unsigned int RadioDriver::getStatus(){
 }
 
 /*
-/brief Send data over the radio
+/brief Send data over the radio, this is a block call
 */
 
-void RadioDriver::Send( unsigned char * mydata )
+void RadioDriver::Send( char * mydata )
 {
-		
-	
+	for (int i=0; i < strlen( mydata ); i++ )
+	{
+    	XBeeOnBreadboard.write( mydata[i] );
+    	delay(100);
+	}
 }
 
-// Called to service incoming data
-void RadioDriver::serviceRadio(){}
+/*
+/brief Service incoming data and oher interrupts
+*/
 
-
+void RadioDriver::serviceRadio()
+{
+}
 
 int Main() {
 	RadioDriver rd = RadioDriver( "XBEE" );
@@ -129,20 +128,17 @@ int Main() {
 	}	
 }
 
-
-
 // Get a pointer to the received data
-unsigned char * RadioDriver::getReceived(){return 0;};
+char * RadioDriver::getReceived()
+{
+	for (int i=0; i<14; i++ )
+	{
+		if (XBeeOnBreadboard.available())
+		{
+			recbuf[i] = XBeeOnBreadboard.read();
+			recbuf[i+1] = '/0';
+		}
+	}
+	return recbuf;
+};
  
-     			
-
-/*
-
-
-
-  if (XBeeOnBreadboard.available())
-    Serial.write(XBeeOnBreadboard.read());
-  if (Serial.available())
-    XBeeOnBreadboard.write(Serial.read());
-
-*/

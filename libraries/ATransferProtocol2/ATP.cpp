@@ -46,7 +46,10 @@ along with ATP.  If not, see <http://www.gnu.org/licenses/>.
  @brief Initializes ATP modules and data structures
 */
 
-ATP::ATP(void){}
+ATP::ATP(void)
+{
+    Init("XBEE");
+}
 
 void ATP::Init( char * driverType )
 {
@@ -66,14 +69,27 @@ void ATP::Test(void)
 	if ( rd.getStatus() ) 
 	{
 		Log.Debug("RadioDriver: Main, status is 1"CR);	
+
+		Log.Debug("Sending message"CR);
+		rd.Send("Hi Frank Here");
+		Log.Debug("Message sent"CR);
+
+
 	}
 	else
 	{
 		Log.Debug("RadioDriver: Main, status is 0"CR);			
 	}	
 
+
+
+
+
+
+
+
+
 	/*
-	ATP_Init( "XBee" );
 	MakeSampleData( 1028 bytes of data );
 	ATP_TransferRequest( sampledata, remotexbee );
 	waitTillTransferred();
