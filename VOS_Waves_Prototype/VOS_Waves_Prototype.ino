@@ -117,7 +117,7 @@ void loop() {
   }
   strip.show();
 
-    XBeeOnBreadboard.println("Hello, world.  ");
+  //XBeeOnBreadboard.println("Hello, world.  ");
 
 /*
 

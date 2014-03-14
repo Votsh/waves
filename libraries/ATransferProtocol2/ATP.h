@@ -35,7 +35,6 @@ along with ATP.  If not, see <http://www.gnu.org/licenses/>.
 /*- Includes ---------------------------------------------------------------*/
 
 #include "Arduino.h"
-#include "RadioDriver.h"
 #include "StatusCodes.h"
 
 /*- Definitions ------------------------------------------------------------*/

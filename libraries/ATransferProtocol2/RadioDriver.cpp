@@ -48,19 +48,22 @@ char recbuf[16] = "123456789012345";	// Receive buffer
 /*- Implementations --------------------------------------------------------*/
 
 
+// Empty constructor
 
-
+RadioDriver::RadioDriver(){}
 
 /*
-\brief Constructor, pass in XBEE or LMW
+\brief Set radio type: XBEE or LMW
 */
 
-RadioDriver::RadioDriver( char * driverType ){
+void RadioDriver::setRadioType( char * driverType ){
 
 	if ( ! strcmp( driverType, "XBEE") )
 	{
 		Log.Debug("driverType: XBEE"CR);
 		status = 1;		
+	    XBeeOnBreadboard.begin(9600);
+	    XBeeOnBreadboard.println("Greetings");
 	}
 	else if( ! strcmp( driverType, "LWM") )
 	{
@@ -74,7 +77,6 @@ RadioDriver::RadioDriver( char * driverType ){
 		return;
 	}
 
-    XBeeOnBreadboard.begin(9600);
 }
 
 unsigned int RadioDriver::getStatus(){
@@ -95,23 +97,28 @@ void RadioDriver::Send( char * mydata )
 }
 
 /*
+/brief Send a request struct over the radio, this is a blocking call
+*/
+
+void RadioDriver::SendTransferRequest( ATP_TransferRequest_t * frame )
+{
+	long size = sizeof(ATP_TransferRequest_t);		
+    const unsigned char *byte;
+    for ( byte = (const unsigned char *) frame; size--; ++byte )                                     
+    {   
+    	//Log.Debug("size=%d byte=%c"CR,size,*byte);
+        XBeeOnBreadboard.write( *byte );
+    	delay(100);
+    }
+    //XBeeOnBreadboard.println( "We are done." );
+}
+
+/*
 /brief Service incoming data and oher interrupts
 */
 
 void RadioDriver::serviceRadio()
 {
-}
-
-int Main() {
-	RadioDriver rd = RadioDriver( "XBEE" );
-	if ( rd.getStatus() ) 
-	{
-		Log.Debug("RadioDriver: Main, status is 1");	
-	}
-	else
-	{
-		Log.Debug("RadioDriver: Main, status is 0");			
-	}	
 }
 
 // Get a pointer to the received data

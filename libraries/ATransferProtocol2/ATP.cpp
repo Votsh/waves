@@ -64,30 +64,24 @@ void ATP::Init( char * driverType )
 
 void ATP::Test(void)
 {
-	Log.Info("ATP Test"CR);
-	
-	RadioDriver rd = RadioDriver( "XBEE" );
-	if ( rd.getStatus() ) 
-	{
-		Log.Debug("RadioDriver: Main, status is 1"CR);	
+	Log.Info("ATP Test"CR);	
 
-		Log.Debug("Sending message"CR);
-		rd.Send("Hi Frank Here");
-		Log.Debug("Message sent"CR);
-
-		TransferRequest tro = TransferRequest();
-		ATP_TransferRequest_t * rq = tro.getNewRequest();
-		tro.printMe( rq );
-		Log.Debug( "-end-" );
-
-	}
-	else
-	{
-		Log.Debug("RadioDriver: Main, status is 0"CR);			
-	}	
+	TransferRequest tro = TransferRequest();
+	ATP_TransferRequest_t * rq = tro.getNewRequest();
+	tro.print( rq );
+	tro.setRadioDriverType("XBEE");
+	tro.sendIt( rq );
+	Log.Debug( "-end-" );
 
 
 
+/*
+ChunkResponse - getters/setters, print
+ChuckRequest - getters/setters, send
+Hardware set-up: hub with 2 new short cables into Micros
+Daemon - receive and dispatch
+Ikea for more shelves
+*/
 
 
 
@@ -96,7 +90,6 @@ void ATP::Test(void)
 
 	/*
 	MakeSampleData( 1028 bytes of data );
-	ATP_TransferRequest( sampledata, remotexbee );
 	waitTillTransferred();
 	done();
 	getTime(source);

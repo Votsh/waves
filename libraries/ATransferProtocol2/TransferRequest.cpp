@@ -43,12 +43,12 @@ See the TransferRequest.h file for definitions of the structs used by the method
 /*- Includes ---------------------------------------------------------------*/
 
 #include "TransferRequest.h"
-#include <Time.h>
+#include "RadioDriver.h"
 
 /*- Variables --------------------------------------------------------------*/
 
 long UniqueIDCounter = 0;
-
+RadioDriver myrd = RadioDriver();
 
 /*- Implementations --------------------------------------------------------*/
 
@@ -75,53 +75,115 @@ ATP_TransferRequest_t * TransferRequest::getNewRequest()
 */
 
 void TransferRequest::setHeaderDefaults( ATP_TransferRequest_t * header){
-	header->frameID[0]='A';
-	header->frameID[1]='T';
-	header->frameID[2]='P';
 	
-	header->frameType = ATP_TRANSFER_REQUEST;
-	header->meshAddress = 0;		// Pan address for XBee radios
-	header->datetime = millis();	//todo: Replace this with the Time library or when you get a Real Time Clock
-	header->atpCount = UniqueIDCounter++;
-	header->version = 1;
-	header->size=1000;
-	header->expires=6789;
-	strcpy( header->descriptor, "CC" ); // text/plain
-	header->source = 0;
-	header->destination = 0;
-	strcpy( header->fileName, "frankolo.ogg" );
+	setFrameID( header, "FCC" );
+	setFrameType( header, ATP_TRANSFER_REQUEST );
+	setMeshAddress( header, 0 );			// Pan address for XBee radios
+	setDatetime( header, millis() );	//todo: Replace this with the Time library or when you get a Real Time Clock
+	setAtpCount( header, UniqueIDCounter++ );
+	setVersion( header, 1 );
+	setSize( header, 1000 );
+	setExpires( header, 6789 );
+	setDescriptor( header, "CC");	
+	setSource( header, 0 );
+	setDestination( header, 0 );
+	setFileName( header, "frankolo.ogg" );
 }
 /*
 \brief Prints ATP_TransferRequest_t type to the logger for debugging
 */
-void TransferRequest::printMe( ATP_TransferRequest_t * frame ){
+void TransferRequest::print( ATP_TransferRequest_t * frame ){
 	Log.Debug("TransferRequest object:"CR);
-	Log.Debug("frameID: %s"CR, getFrameID(frame));	
-	
-	
+	Log.Debug("frameID:     %s"CR, getFrameID(frame));
+	Log.Debug("frameType:   %d"CR, getFrameType(frame));	
+	Log.Debug("meshAddress: %d"CR, getMeshAddress(frame));	
+	Log.Debug("datetime:    %d"CR, getDatetime(frame));	
+	Log.Debug("atpCount:    %d"CR, getAtpCount(frame)); 	
+	Log.Debug("version:     %d"CR, getVersion(frame));	
+	Log.Debug("size:        %d"CR, getSize(frame));
+	Log.Debug("expires:     %d"CR, getExpires(frame));	
+	Log.Debug("descriptor:  %s"CR, getDescriptor(frame));	
+	Log.Debug("source:      %d"CR, getSource(frame));	
+	Log.Debug("destination: %d"CR, getDestination(frame));	
+	Log.Debug("fileName:    %s"CR, getFileName(frame));
 }
-/*  int			frameType;
-  long			meshAddress;
-  unsigned long long	datetime;
-  long			atpCount;
-  unsigned int 	version;
-
-  unsigned long size;
-  unsigned long expires;  
-  char			descriptor[6];
-  unsigned long source;
-  unsigned long	destination;
-  char			fileName[17];
-*//*
+/*
 \brief Getters and Setters
 */
 
 char * TransferRequest::getFrameID( ATP_TransferRequest_t * frame ){ return frame->frameID; }
+void TransferRequest::setFrameID( ATP_TransferRequest_t * frame, char * id)
+{	frame->frameID[0]=id[0];
+	frame->frameID[1]=id[1];
+	frame->frameID[2]=id[2];
+}
+
+unsigned int TransferRequest::getFrameType( ATP_TransferRequest_t * frame ){ return frame->frameType; }
+void TransferRequest::setFrameType( ATP_TransferRequest_t * frame, unsigned int mytype){ frame->frameType = mytype; }
+
+unsigned int TransferRequest::getMeshAddress( ATP_TransferRequest_t * frame ){ return frame->meshAddress; }
+void TransferRequest::setMeshAddress( ATP_TransferRequest_t * frame, unsigned int mymesh){ frame->meshAddress = mymesh; }
+
+unsigned long long TransferRequest::getDatetime( ATP_TransferRequest_t * frame ){ return frame->datetime; }
+void TransferRequest::setDatetime( ATP_TransferRequest_t * frame, unsigned long long mytime){ frame->datetime = mytime; }
+
+unsigned long TransferRequest::getAtpCount( ATP_TransferRequest_t * frame ){ return frame->atpCount; }
+void TransferRequest::setAtpCount( ATP_TransferRequest_t * frame, unsigned long myval){ frame->atpCount = myval; }
+
+unsigned int TransferRequest::getVersion( ATP_TransferRequest_t * frame ){ return frame->version; }
+void TransferRequest::setVersion( ATP_TransferRequest_t * frame, unsigned int myval){ frame->version = myval; }
+
+unsigned long TransferRequest::getSize( ATP_TransferRequest_t * frame ){ return frame->size; }
+void TransferRequest::setSize( ATP_TransferRequest_t * frame, unsigned long myval){ frame->size = myval; }
+
+unsigned long TransferRequest::getExpires( ATP_TransferRequest_t * frame ){ return frame->expires; }
+void TransferRequest::setExpires( ATP_TransferRequest_t * frame, unsigned long myval){ frame->expires = myval; }
+
+char * TransferRequest::getDescriptor( ATP_TransferRequest_t * frame ){ return frame->descriptor; }
+void TransferRequest::setDescriptor( ATP_TransferRequest_t * frame, char * id){ strcpy( frame->descriptor, id ); }
+
+unsigned long TransferRequest::getSource( ATP_TransferRequest_t * frame ){ return frame->source; }
+void TransferRequest::setSource( ATP_TransferRequest_t * frame, unsigned long myval){ frame->source = myval; }
+
+unsigned long TransferRequest::getDestination( ATP_TransferRequest_t * frame ){ return frame->destination; }
+void TransferRequest::setDestination( ATP_TransferRequest_t * frame, unsigned long myval){ frame->destination = myval; }
+
+char * TransferRequest::getFileName( ATP_TransferRequest_t * frame ){ return frame->fileName; }
+void TransferRequest::setFileName( ATP_TransferRequest_t * frame, char * id){ strcpy( frame->fileName, id ); }
+
+/*
+\brief Instantiate a new RadioDriver instance
+*/
+
+void TransferRequest::setRadioDriverType(char * mytype)
+{
+	myrd.setRadioType( mytype );
+	if ( myrd.getStatus() ) 
+	{
+		Log.Debug("RadioDriver: getNewRadioDriver, status is 1"CR);	
+	}
+	else
+	{
+		Log.Debug("RadioDriver: getNewRadioDriver, status is 0"CR);	
+	}	
+}
+
+/*
+\brief Send a TransferRequest to a remote host
+*/
+
+void TransferRequest::sendIt( ATP_TransferRequest_t * frame )
+{
+	Log.Debug("Sending message"CR);
+	myrd.SendTransferRequest( frame );
+	Log.Debug("Message sent"CR);
+}
 
 
-/*TransferRequest::setSize()TransferRequest::getSize()TransferRequest::setTime()TransferRequest::getTime()TransferRequest::setExpires()TransferRequest::getExpires()TransferRequest::setVersion()TransferRequest::getVersion()TransferRequest::setContentDescriptor()
-TransferRequest::getContentDescriptor()
-TransferRequest::setSource()TransferRequest::getSource()TransferRequest::setDestination()TransferRequest::getDestination()TransferRequest::getStatus() - returns status codeTransferRequest::getError() - returns error codeTransferRequest::isTransferToBuffer() - returns true if transfer is to in-memory buffer, returns false if transfer is to cardTransferRequest::setFileName() - 16 character file name, or null if store to memory bufferTransferRequest::getFileName()TransferRequest::send() - sends request to the destinationTransferRequest::delete() - removes object and related dataTransferRequest::getBufferAddress() - returns address of the in-memory buffer, meaningful only to the peerTransferRequest::isTransferComplete() - returns true if all data transffered, false if still transferring dataTransferRequest::getTransferStatus() - returns first node of a linked-list of a entries showing which portions of the transfer are complete, meaningful only to the receiving peerTransferRequest::getTransferSize() - returns a 16 bit value defining the number of 8-bit unsigned integer values in the transfer
+
+
+
+/*TransferRequest::delete() - removes object and related dataTransferRequest::getBufferAddress() - returns address of the in-memory buffer, meaningful only to the peerTransferRequest::isTransferComplete() - returns true if all data transffered, false if still transferring dataTransferRequest::getTransferStatus() - returns first node of a linked-list of a entries showing which portions of the transfer are complete, meaningful only to the receiving peerTransferRequest::getTransferSize() - returns a 16 bit value defining the number of 8-bit unsigned integer values in the transfer
 
 */
 

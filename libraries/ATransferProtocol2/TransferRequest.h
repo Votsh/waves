@@ -37,10 +37,8 @@ along with ATP.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <stdint.h>
 #include "Arduino.h"
-#include "RadioDriver.h"
 #include "StatusCodes.h"
-#include "TransferRequest.h"
-#include <Time.h>
+#include "RadioDriver.h"
 
 /*- Definitions ------------------------------------------------------------*/
 
@@ -81,10 +79,47 @@ class TransferRequest
     TransferRequest();
 	ATP_TransferRequest_t * getNewRequest();	// Return a new TransferRequest object
 	void setHeaderDefaults( ATP_TransferRequest_t * );	// Sets dalues for TransferRequest
-	void printMe( ATP_TransferRequest_t * );		// Prints TransferRequest object to logger
+	void print( ATP_TransferRequest_t * );		// Prints TransferRequest object to logger
+	void setRadioDriverType( char * );
 
 	char * getFrameID( ATP_TransferRequest_t * );
+	void setFrameID( ATP_TransferRequest_t *, char *);
 
+	unsigned int getFrameType( ATP_TransferRequest_t * );
+	void setFrameType( ATP_TransferRequest_t *, unsigned int);
+
+	unsigned int getMeshAddress( ATP_TransferRequest_t * );
+	void setMeshAddress( ATP_TransferRequest_t *, unsigned int);
+
+	unsigned long long getDatetime( ATP_TransferRequest_t * );
+	void setDatetime( ATP_TransferRequest_t *, unsigned long long);
+
+	unsigned long getAtpCount( ATP_TransferRequest_t * );
+	void setAtpCount( ATP_TransferRequest_t *, unsigned long);
+
+	unsigned int getVersion( ATP_TransferRequest_t *);
+	void setVersion( ATP_TransferRequest_t *, unsigned int);
+
+	unsigned long getSize( ATP_TransferRequest_t * );
+	void setSize( ATP_TransferRequest_t *, unsigned long);
+
+	unsigned long getExpires( ATP_TransferRequest_t * );
+	void setExpires( ATP_TransferRequest_t *, unsigned long);
+
+	char * getDescriptor( ATP_TransferRequest_t * );
+	void setDescriptor( ATP_TransferRequest_t *, char *);
+
+	unsigned long getSource( ATP_TransferRequest_t * );
+	void setSource( ATP_TransferRequest_t *, unsigned long);
+
+	unsigned long getDestination( ATP_TransferRequest_t * );
+	void setDestination( ATP_TransferRequest_t *, unsigned long);
+
+	char * getFileName( ATP_TransferRequest_t * );
+	void setFileName( ATP_TransferRequest_t *, char *);
+
+	void sendIt( ATP_TransferRequest_t * );
+	
 };
 
 
