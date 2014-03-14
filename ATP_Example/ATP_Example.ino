@@ -50,8 +50,8 @@ void loop() {
   {
     firsttime=0;
     delay(3000);
-    atp.Init("XBEE");
     atp.Test();
+    
   }
   
   delay(100);

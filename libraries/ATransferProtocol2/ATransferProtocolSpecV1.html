@@ -77,35 +77,49 @@ status when all chucks are received.<br>
 <img style="border: 0px solid ; width: 360px; height: 278px;" alt="State diagram showing sync/async conversation between lead peer and peer units" src="http://votsh.files.wordpress.com/2014/03/atp3.jpg"><br>
 <h3>Transfer Request</h3>
 <ul>
-  <li>AUID - A Unique ID, 32 bit value, hash of the character array "ATP", the request type
-(first 2 bits set at 0,0), PAN ID, current time in milliseconds, and
-count of TransferRequest objects created. While a hash introduces the
-possibility of collissions, AUID is a hash for situations where a peer
-crashed or went offline temporarily during a transfer session.<br>
-</li>
-  <li>Version - 8 bit value, version of the request schema</li>
-  <li>Size - 32 bit unsigned value, number of 8 bit unsigned bytes to transfer</li>
+  <li>Header consists of the following values. While a header introduces the
+possibility of collissions, the header is for situations where a peer
+crashed, radio mesh network failed, or went offline temporarily during a transfer session.</li>
+  <ul>
+    <li>frameID - character array: ATP</li>
+    <li>frameType - unsigned integer with value 0 - TransferRequest, 1- ChuckRequest, 2 - ChunkResponse</li>
+    <li>thePAN - unsigned integer with value of the radio/mesh address</li>
+    <li>theDate - unsigned long long of milliseconds since January 1, 1970 00:00:00 GMT, the epoch</li>
+    <li>atpCount - unisnged long of unique number for this use of the protocol</li>
+  </ul>
 
-  <li>Time - 32 bit unsigned value, milliseconds since January 1, 1970 00:00:00 GMT<br>
-  </li>
-  <li>Expires - 16 bit unsigned value number of milliseconds after Time value  </li>
   
-  <li>Descriptor - 5 character array of abbreviated MIME types, see <a href="http://www.abbreviations.com/acronyms/MIMETYPES">http://www.abbreviations.com/acronyms/MIMETYPES</a><br>
+  <ul>
+    <li>version - unsigned int version of the request schema</li>
+  </ul>
+
+  <li>size - 32 bit unsigned value, number of 8 bit unsigned bytes to transfer</li><li>expires - 16 bit unsigned value number of milliseconds after Time value  </li>
+  
+  <li>descriptor - 5 character array of abbreviated MIME types, see <a href="http://www.abbreviations.com/acronyms/MIMETYPES">http://www.abbreviations.com/acronyms/MIMETYPES</a><br>
 </li>
-  <li>Source - serving resource (Mesh, Point, URL), if mesh then the Source is the PAN value, used only by the receiving peer<br>
+  <li>source - serving resource (Mesh, Point, URL), if mesh then the Source is the PAN value, used only by the receiving peer<br>
 </li>
-  <li>Destination - consuming resource (Mesh, Point, URL), if
+  <li>destination - consuming resource (Mesh, Point, URL), if
 mesh then the Destination is the PAN value, used only by the sending
 peer<br>
 </li>
-  <li>FileName - 16 character file name with null terminator, or null if store to memory buffer<br>
+  <li>fileName - 16 character file name with null terminator, or null if store to memory buffer<br>
   </li>
 </ul>
 
 <h3>Chunk Request</h3>
 <ul>
-  <li>AUID - 32 bit value, a hash of the character array "ATP", a unique identifier from Transfer Request, with the first 2 bits set at 0,1, identifying the request type<br>
-</li>
+  
+  <li>Header consists of the following values. While a header introduces the
+possibility of collissions, the header is for situations where a peer
+crashed, radio mesh network failed, or went offline temporarily during a transfer session.</li>
+  <ul>
+<li>frameID - character array: ATP</li><li>frameType - unsigned integer with value 0 - TransferRequest, 1- ChuckRequest, 2 - ChunkResponse</li><li>thePAN - unsigned integer with value of the radio/mesh address</li><li>theDate - unsigned long long of milliseconds since January 1, 1970 00:00:00 GMT, the epoch</li><li>atpCount - unisnged long of unique number for this use of the protocol</li>
+  </ul>
+  <ul>
+<li>version - unsigned int version of the request schema</li>
+  </ul>
+
   <li>Start byte offset - 32 bit unsigned value, starting address of transfer</li>
   <li>Length
 - 16 bit unsigned value, quantity of 8 bit unsigned values to transfer,
@@ -122,7 +136,16 @@ Unused<br>
 <h3>Chunk Response<br>
 </h3>
 <ul>
-<li>AUID - 32 bit value, a hash of the character array "ATP", a unique identifier from Transfer Request, , with the first 2 bits set at 1,0 identifying the response type</li><li>Status - Success, Failed during transit, failed checksum</li>
+  <li>Header consists of the following values. While a header introduces the
+possibility of collissions, the header is for situations where a peer
+crashed, radio mesh network failed, or went offline temporarily during a transfer session.</li>
+  <ul>
+<li>frameID - character array: ATP</li><li>frameType - unsigned integer with value 0 - TransferRequest, 1- ChuckRequest, 2 - ChunkResponse</li><li>thePAN - unsigned integer with value of the radio/mesh address</li><li>theDate - unsigned long long of milliseconds since January 1, 1970 00:00:00 GMT, the epoch</li><li>atpCount - unisnged long of unique number for this use of the protocol</li>
+  </ul>
+  <ul>
+<li>version - unsigned int version of the request schema</li>
+  </ul>
+<li>Status - Success, Failed during transit, failed checksum</li>
   <li>Start byte offset - 32 bit unsigned value, starting address of transfer</li>
   <li>Length
 - 16 bit unsigned value, quantity of 8 bit unsigned values to transfer,

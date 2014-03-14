@@ -37,6 +37,7 @@ along with ATP.  If not, see <http://www.gnu.org/licenses/>.
 #include "Logging.h"
 #include "RadioDriver.h"
 #include "StatusCodes.h"
+#include "TransferRequest.h"
 
 /*- Variables --------------------------------------------------------------*/
 
@@ -74,6 +75,10 @@ void ATP::Test(void)
 		rd.Send("Hi Frank Here");
 		Log.Debug("Message sent"CR);
 
+		TransferRequest tro = TransferRequest();
+		ATP_TransferRequest_t * rq = tro.getNewRequest();
+		tro.printMe( rq );
+		Log.Debug( "-end-" );
 
 	}
 	else

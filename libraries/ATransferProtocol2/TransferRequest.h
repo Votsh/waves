@@ -30,31 +30,64 @@ You should have received a copy of the GNU General Public License
 along with ATP.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _RD_H_
-#define _RD_H_
-
+#ifndef _TR_H_
+#define _TR_H_
 
 /*- Includes ---------------------------------------------------------------*/
 
+#include <stdint.h>
 #include "Arduino.h"
+#include "RadioDriver.h"
 #include "StatusCodes.h"
-#include "ATP.h"
-#include "Logging.h"
-#include <SoftwareSerial.h>
+#include "TransferRequest.h"
+#include <Time.h>
 
 /*- Definitions ------------------------------------------------------------*/
+
 /*- Types ------------------------------------------------------------------*/
+
+typedef struct ATP_TransferRequest_t
+{
+  char			frameID[3];
+  int			frameType;
+  long			meshAddress;
+  unsigned long long	datetime;
+  long			atpCount;
+  unsigned int 	version;
+
+  unsigned long size;
+  unsigned long expires;  
+  char			descriptor[6];
+  unsigned long source;
+  unsigned long	destination;
+  char			fileName[17];
+} ATP_TransferRequest_t;
+
+// Request type for AUID hash bits 0 and 1
+
+typedef enum
+{
+  ATP_TRANSFER_REQUEST                    = 0x00,
+  ATP_CHUNK__REQUEST                      = 0x01,
+  ATP_CHUNK_RESPONSE                      = 0x02,	
+} ATP_RequestType_t;
+
 /*- Variables --------------------------------------------------------------*/
 /*- Prototypes -------------------------------------------------------------*/
 
-class RadioDriver
+class TransferRequest
 {
   public:
-    RadioDriver( char * );
-    void serviceRadio();					// Called to service incoming data
-	void Send( char * ); 		 	// Send data over the radio
-	char * getReceived(); 			// Get a pointer to the received data
-	unsigned int getStatus();
+    TransferRequest();
+	ATP_TransferRequest_t * getNewRequest();	// Return a new TransferRequest object
+	void setHeaderDefaults( ATP_TransferRequest_t * );	// Sets dalues for TransferRequest
+	void printMe( ATP_TransferRequest_t * );		// Prints TransferRequest object to logger
+
+	char * getFrameID( ATP_TransferRequest_t * );
+
 };
 
+
+
 #endif
+

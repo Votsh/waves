@@ -49,20 +49,6 @@ char recbuf[16] = "123456789012345";	// Receive buffer
 
 
 
-/*
-
-Remember that C passes everything by value. so char *myptr(char *dest, char *src)
-is going to return the value of a pointer to the return value, and the inputs are
-the address of a character array, NOT the a reference to the pointer.
-
-const char *src
-tells the compiler that the src array is read only
-
-*ptr++ get the value, then increment the pointer
-(*ptr)++ get the value and increment the value by 1
-
-"" defines a character array with /0 as the last character, '' is just the char array
-*/
 
 
 /*
@@ -96,7 +82,7 @@ unsigned int RadioDriver::getStatus(){
 }
 
 /*
-/brief Send data over the radio, this is a block call
+/brief Send data over the radio, this is a blocking call
 */
 
 void RadioDriver::Send( char * mydata )
