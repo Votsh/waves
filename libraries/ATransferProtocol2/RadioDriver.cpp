@@ -97,12 +97,46 @@ void RadioDriver::Send( char * mydata )
 }
 
 /*
-/brief Send a request struct over the radio, this is a blocking call
+/brief Send a TransferRequest struct over the radio, this is a blocking call
 */
 
 void RadioDriver::SendTransferRequest( ATP_TransferRequest_t * frame )
 {
 	long size = sizeof(ATP_TransferRequest_t);		
+    const unsigned char *byte;
+    for ( byte = (const unsigned char *) frame; size--; ++byte )                                     
+    {   
+    	//Log.Debug("size=%d byte=%c"CR,size,*byte);
+        XBeeOnBreadboard.write( *byte );
+    	delay(100);
+    }
+    //XBeeOnBreadboard.println( "We are done." );
+}
+
+/*
+/brief Send a ChunkRequest struct over the radio, this is a blocking call
+*/
+
+void RadioDriver::SendChunkRequest( ATP_ChunkRequest_t * frame )
+{
+	long size = sizeof(ATP_ChunkRequest_t);		
+    const unsigned char *byte;
+    for ( byte = (const unsigned char *) frame; size--; ++byte )                                     
+    {   
+    	//Log.Debug("size=%d byte=%c"CR,size,*byte);
+        XBeeOnBreadboard.write( *byte );
+    	delay(100);
+    }
+    //XBeeOnBreadboard.println( "We are done." );
+}
+
+/*
+/brief Send a ChunkResponse struct over the radio, this is a blocking call
+*/
+
+void RadioDriver::SendChunkResponse( ATP_ChunkResponse_t * frame )
+{
+	long size = sizeof(ATP_ChunkResponse_t);		
     const unsigned char *byte;
     for ( byte = (const unsigned char *) frame; size--; ++byte )                                     
     {   

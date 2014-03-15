@@ -38,6 +38,11 @@ ATP atp = ATP();
 #define baudrate 9600
 int firsttime = 1;
 
+#define TEST_AS_LEAD 0
+#define TEST_AS_SCOUT 1
+
+#define TESTType TEST_AS_LEAD
+
 void setup() {
   Serial.begin(baudrate);
    // while the serial stream is not open, do nothing:
@@ -50,7 +55,14 @@ void loop() {
   {
     firsttime=0;
     delay(3000);
-    atp.Test();
+    //atp.Test();
+    
+    
+    
+    
+    
+    
+    
     
   }
   

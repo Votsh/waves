@@ -85,7 +85,7 @@ const int chipSelect = CARDCS;
 //   NEO_GRB     Pixels are wired for GRB bitstream (most NeoPixel products)
 //   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
 
-#define WS2812_PIN 7
+#define WS2812_PIN 22
 
 Adafruit_NeoPixel_Votsh strip = Adafruit_NeoPixel_Votsh(16, WS2812_PIN, NEO_GRB + NEO_KHZ800);
 
@@ -116,7 +116,7 @@ void loop() {
     strip.setPixelColor(i*2, myval);
   }
   strip.show();
-
+  
   //XBeeOnBreadboard.println("Hello, world.  ");
 
 /*
@@ -126,7 +126,7 @@ void loop() {
   if (Serial.available())
     XBeeOnBreadboard.write(Serial.read());
 */
-  delay(1);
+  delay(100);
 }
 
 void mySetup(){
@@ -143,7 +143,7 @@ void mySetup(){
     pinMode(WS2812_PIN, OUTPUT);
     strip.begin();
     Log.Debug(CR"Started WS2812 lights"CR);
-    
+    /*
     setupMusic();
 
     Log.Info("Playing music file"CR);
@@ -153,6 +153,7 @@ void mySetup(){
     
     XBeeOnBreadboard.begin(9600);
     XBeeOnBreadboard.println("Hello, world?");
+    */
   }
   
   void setupMusic(){

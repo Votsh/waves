@@ -41,6 +41,8 @@ along with ATP.  If not, see <http://www.gnu.org/licenses/>.
 #include "Logging.h"
 #include <SoftwareSerial.h>
 #include "TransferRequest.h"
+#include "ChunkRequest.h"
+#include "ChunkResponse.h"
 
 /*- Definitions ------------------------------------------------------------*/
 /*- Types ------------------------------------------------------------------*/
@@ -48,6 +50,8 @@ along with ATP.  If not, see <http://www.gnu.org/licenses/>.
 /*- Prototypes -------------------------------------------------------------*/
 
 struct ATP_TransferRequest_t;		// Forward declaration
+struct ATP_ChunkRequest_t;			// Forward declaration
+struct ATP_ChunkResponse_t;			// Forward declaration
 
 class RadioDriver
 {
@@ -56,6 +60,8 @@ class RadioDriver
     void serviceRadio();					// Called to service incoming data
 	void Send( char * ); 		 	// Send data over the radio
 	void SendTransferRequest( ATP_TransferRequest_t * );	// Send a Transfer Request
+	void SendChunkRequest( ATP_ChunkRequest_t * );			// Send a ChunkRequest
+	void SendChunkResponse( ATP_ChunkResponse_t * );		// Send a ChunkResponse
 	char * getReceived(); 			// Get a pointer to the received data
 	unsigned int getStatus();
 	void setRadioType( char * );	// Sets type of driver: XBEE, LMW

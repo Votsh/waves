@@ -77,11 +77,14 @@ class TransferRequest
 {
   public:
     TransferRequest();
-	ATP_TransferRequest_t * getNewRequest();	// Return a new TransferRequest object
-	void setHeaderDefaults( ATP_TransferRequest_t * );	// Sets dalues for TransferRequest
-	void print( ATP_TransferRequest_t * );		// Prints TransferRequest object to logger
+	ATP_TransferRequest_t * getNewRequest();			// Return a new TransferRequest object
+	void setDefaults( ATP_TransferRequest_t * );	// Sets values for TransferRequest
+	void print( ATP_TransferRequest_t * );				// Prints TransferRequest object to logger
 	void setRadioDriverType( char * );
+	void sendIt( ATP_TransferRequest_t * );
 
+	/* Getters and Setters for TransferRequest struct */
+	
 	char * getFrameID( ATP_TransferRequest_t * );
 	void setFrameID( ATP_TransferRequest_t *, char *);
 
@@ -117,9 +120,6 @@ class TransferRequest
 
 	char * getFileName( ATP_TransferRequest_t * );
 	void setFileName( ATP_TransferRequest_t *, char *);
-
-	void sendIt( ATP_TransferRequest_t * );
-	
 };
 
 

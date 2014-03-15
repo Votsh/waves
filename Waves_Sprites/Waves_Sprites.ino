@@ -47,10 +47,23 @@ with a modification to support %f
 #include <Logging.h>
 #include <SPI.h>
 #include <SD.h>
+#include <Adafruit_NeoPixel_Votsh.h>
 
-#define DEMO 1
+#define DEMO 3
 
 #define LOGLEVEL LOG_LEVEL_DEBUG
+
+// Parameter 1 = number of pixels in strip
+// Parameter 2 = pin number (most are valid)
+// Parameter 3 = pixel type flags, add together as needed:
+//   NEO_KHZ800  800 KHz bitstream (most NeoPixel products w/WS2812 LEDs)
+//   NEO_KHZ400  400 KHz (classic 'v1' (not v2) FLORA pixels, WS2811 drivers)
+//   NEO_GRB     Pixels are wired for GRB bitstream (most NeoPixel products)
+//   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
+
+#define WS2812_PIN 22
+
+Adafruit_NeoPixel_Votsh strip = Adafruit_NeoPixel_Votsh(16, WS2812_PIN, NEO_GRB + NEO_KHZ800);
 
 #define BlueColor 240
 #define YellowColor 10
@@ -83,16 +96,14 @@ int * pixels = NULL;   // Grid of pixels
 int * spriteMask;      // Grid for sprite mask definition
 
 /* One time initialization of VOS */
-void setup2() {
-Serial.begin(9600);
-while (!Serial) {
-    ; // wait for serial port to connect. Needed for Leonardo only
-  }
-    doSetup();
-    
-    delay(4000);
-    
-    Log.Init(LOGLEVEL, 9600);
+void setup() 
+{
+    Serial.begin(57600);
+
+    pinMode(WS2812_PIN, OUTPUT);
+    strip.begin();
+        
+    Log.Init(LOGLEVEL, 57600);
     Log.Info(CR"---------------------------------"CR);
     Log.Info("VOS Waves"CR);
     Log.Info("---------------------------------"CR);
@@ -103,7 +114,7 @@ while (!Serial) {
 /* Main operation
 Main - operates several demonstrations of the Waves device
 */
-void loop2(){
+void loop(){
   Serial.println("looping");
   
    if ( DEMO == 1 )
@@ -131,10 +142,7 @@ void loop2(){
       GridRenderProvider();
       DeviceRenderProvider();
    }  
-  delay(100);
-}
-
-void doSetup(){
+  delay(10);
 }
 
 //   Sparkles lights, good for the start of a show

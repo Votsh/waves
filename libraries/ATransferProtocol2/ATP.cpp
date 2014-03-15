@@ -76,11 +76,23 @@ void ATP::Test(void)
 
 
 /*
-ChunkResponse - getters/setters, print
-ChuckRequest - getters/setters, send
-Hardware set-up: hub with 2 new short cables into Micros
-Daemon - receive and dispatch
-Ikea for more shelves
+
+Big picture:
+1) Finish coding A Transfer Protocol (this weekend)
+2) Define the “show” format (definition of sound, light events)
+3) Define the Web interface for a Show Builder app (this creates “shows”)
+4) Receive your PC boards for the LEDs/prototype.
+5) Receive the Pinoccio scouts, replace my current Arduino Micros, finish the prototype
+6) Once I prove the Pinoccio design works, I will work with you to design a prototype PC board based on the Pinoccio design (it’s open source, including Eagle files)
+7) Receive the RTC units and wire into Pinoccio-based prototype
+8) Assemble 2 Lead Wave units, 4 Wave units (6 total). 2 of them go to show designers I am lining up.
+8) Design final prototype with you. I’ll need to replace anything that gets in the way of a $20 total BOM per Wave unit - to keep the retail price below $99.
+
+
+Daemon - receive and dispatch (both sides, same library)
+Malloc stuff
+Save to SD card
+Show definition
 */
 
 

@@ -66,7 +66,7 @@ ATP_TransferRequest_t * TransferRequest::getNewRequest()
 {
 	ATP_TransferRequest_t * atr = (ATP_TransferRequest_t *) malloc( sizeof(ATP_TransferRequest_t) );
 	//todo: Test for a null response from malloc and handle as exception	
-	setHeaderDefaults( atr );
+	setDefaults( atr );
 	return atr;
 }
 
@@ -74,7 +74,7 @@ ATP_TransferRequest_t * TransferRequest::getNewRequest()
 \brief Sets header values for TransferRequest
 */
 
-void TransferRequest::setHeaderDefaults( ATP_TransferRequest_t * header){
+void TransferRequest::setDefaults( ATP_TransferRequest_t * header ){
 	
 	setFrameID( header, "FCC" );
 	setFrameType( header, ATP_TRANSFER_REQUEST );
