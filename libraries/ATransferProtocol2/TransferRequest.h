@@ -50,8 +50,9 @@ typedef struct ATP_TransferRequest_t
   int			frameType;
   long			meshAddress;
   unsigned long long	datetime;
-  long			atpCount;
+  unsigned long	atpID;
   unsigned int 	version;
+  unsigned int	status;
 
   unsigned long size;
   unsigned long expires;  
@@ -59,15 +60,18 @@ typedef struct ATP_TransferRequest_t
   unsigned long source;
   unsigned long	destination;
   char			fileName[17];
+  
+  unsigned int * buffer;	// Meaningful only to the receiver
+  
 } ATP_TransferRequest_t;
 
 // Request type for AUID hash bits 0 and 1
 
 typedef enum
 {
-  ATP_TRANSFER_REQUEST                    = 0x00,
-  ATP_CHUNK__REQUEST                      = 0x01,
-  ATP_CHUNK_RESPONSE                      = 0x02,	
+  ATP_TRANSFER_REQUEST		= 0x00,
+  ATP_CHUNK_REQUEST			= 0x01,
+  ATP_CHUNK_RESPONSE		= 0x02,	
 } ATP_RequestType_t;
 
 /*- Variables --------------------------------------------------------------*/
@@ -77,11 +81,9 @@ class TransferRequest
 {
   public:
     TransferRequest();
-	ATP_TransferRequest_t * getNewRequest();			// Return a new TransferRequest object
-	void setDefaults( ATP_TransferRequest_t * );	// Sets values for TransferRequest
+	ATP_TransferRequest_t * getNewRequest( int );		// Return a new TransferRequest object
+	void setDefaults( ATP_TransferRequest_t *, int );	// Sets values for TransferRequest
 	void print( ATP_TransferRequest_t * );				// Prints TransferRequest object to logger
-	void setRadioDriverType( char * );
-	void sendIt( ATP_TransferRequest_t * );
 
 	/* Getters and Setters for TransferRequest struct */
 	
@@ -97,11 +99,14 @@ class TransferRequest
 	unsigned long long getDatetime( ATP_TransferRequest_t * );
 	void setDatetime( ATP_TransferRequest_t *, unsigned long long);
 
-	unsigned long getAtpCount( ATP_TransferRequest_t * );
-	void setAtpCount( ATP_TransferRequest_t *, unsigned long);
+	unsigned long getAtpID( ATP_TransferRequest_t * );
+	void setAtpID( ATP_TransferRequest_t *, unsigned long);
 
 	unsigned int getVersion( ATP_TransferRequest_t *);
 	void setVersion( ATP_TransferRequest_t *, unsigned int);
+
+	unsigned int getStatus( ATP_TransferRequest_t *);
+	void setStatus( ATP_TransferRequest_t *, unsigned int);
 
 	unsigned long getSize( ATP_TransferRequest_t * );
 	void setSize( ATP_TransferRequest_t *, unsigned long);
@@ -117,6 +122,9 @@ class TransferRequest
 
 	unsigned long getDestination( ATP_TransferRequest_t * );
 	void setDestination( ATP_TransferRequest_t *, unsigned long);
+
+	unsigned int * getBuffer( ATP_TransferRequest_t * );
+	void setBuffer( ATP_TransferRequest_t *, unsigned int * );
 
 	char * getFileName( ATP_TransferRequest_t * );
 	void setFileName( ATP_TransferRequest_t *, char *);

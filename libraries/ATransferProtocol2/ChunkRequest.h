@@ -51,8 +51,10 @@ typedef struct ATP_ChunkRequest_t
   int			frameType;
   long			meshAddress;
   unsigned long long	datetime;
-  long			atpCount;
+  long			atpID;
   unsigned int 	version;
+  unsigned int	status;
+  // Do not change the above members of the struct. The app.cpp dispatcher requires these.
 
   unsigned long start;
   unsigned long length;
@@ -67,11 +69,9 @@ class ChunkRequest
   public:
 	ChunkRequest();
 	
-	ATP_ChunkRequest_t * getNewRequest();				// Return a new ChunkRequest object
-	void setDefaults( ATP_ChunkRequest_t * );		// Sets values for ChunkRequest
+	ATP_ChunkRequest_t * getNewRequest( int );		// Return a new ChunkRequest object
+	void setDefaults( ATP_ChunkRequest_t *, int );	// Sets values for ChunkRequest
 	void print( ATP_ChunkRequest_t * );				// Prints ChunkRequest object to logger
-	void setRadioDriverType( char * );
-	void sendIt( ATP_ChunkRequest_t * );
 
 	/* Getters and Setters for ChunkRequest struct */
 
@@ -87,11 +87,14 @@ class ChunkRequest
 	unsigned long long getDatetime( ATP_ChunkRequest_t * );
 	void setDatetime( ATP_ChunkRequest_t *, unsigned long long);
 
-	unsigned long getAtpCount( ATP_ChunkRequest_t * );
-	void setAtpCount( ATP_ChunkRequest_t *, unsigned long);
+	unsigned long getAtpID( ATP_ChunkRequest_t * );
+	void setAtpID( ATP_ChunkRequest_t *, unsigned long);
 
 	unsigned int getVersion( ATP_ChunkRequest_t *);
 	void setVersion( ATP_ChunkRequest_t *, unsigned int);
+
+	unsigned int getStatus( ATP_ChunkRequest_t *);
+	void setStatus( ATP_ChunkRequest_t *, unsigned int);
 
 	unsigned long getStart( ATP_ChunkRequest_t *);
 	void setStart( ATP_ChunkRequest_t *, unsigned long);

@@ -51,15 +51,20 @@ typedef struct ATP_ChunkResponse_t
   int			frameType;
   long			meshAddress;
   unsigned long long	datetime;
-  long			atpCount;
+  long			atpID;
   unsigned int 	version;
+  unsigned int	status;
+  // Do not change the above members of the struct. The app.cpp dispatcher requires these.
 
-  unsigned int  	status;
-  unsigned int * 	start;
+  unsigned long 	start;
   unsigned long 	length;
   unsigned int		transferTypes;
   unsigned int		verify;
-  unsigned int * 	data;
+  
+  unsigned int * 	data;	// Only meaningful to the receiver
+  
+  // Followed by the actual data as an array of unsigned ints
+    
 } ATP_ChunkResponse_t;
 
 /*- Variables --------------------------------------------------------------*/
@@ -70,11 +75,9 @@ class ChunkResponse
   public:
 	ChunkResponse();
 	
-	ATP_ChunkResponse_t * getNewRequest();				// Return a new ChunkResponse object
-	void setDefaults( ATP_ChunkResponse_t * );		// Sets values for ChunkResponse
+	ATP_ChunkResponse_t * getNewRequest( int );			// Return a new ChunkResponse object
+	void setDefaults( ATP_ChunkResponse_t *, int );		// Sets values for ChunkResponse
 	void print( ATP_ChunkResponse_t * );				// Prints ChunkResponse object to logger
-	void setRadioDriverType( char * );
-	void sendIt( ATP_ChunkResponse_t * );
 
 	/* Getters and Setters for ChunkResponse struct */
 
@@ -90,8 +93,8 @@ class ChunkResponse
 	unsigned long long getDatetime( ATP_ChunkResponse_t * );
 	void setDatetime( ATP_ChunkResponse_t *, unsigned long long);
 
-	unsigned long getAtpCount( ATP_ChunkResponse_t * );
-	void setAtpCount( ATP_ChunkResponse_t *, unsigned long);
+	unsigned long getAtpID( ATP_ChunkResponse_t * );
+	void setAtpID( ATP_ChunkResponse_t *, unsigned long);
 
 	unsigned int getVersion( ATP_ChunkResponse_t *);
 	void setVersion( ATP_ChunkResponse_t *, unsigned int);
@@ -99,8 +102,8 @@ class ChunkResponse
 	unsigned int getStatus( ATP_ChunkResponse_t * );
 	void setStatus( ATP_ChunkResponse_t *, unsigned int);
 
-	unsigned int * getStart( ATP_ChunkResponse_t * );
-	void setStart( ATP_ChunkResponse_t *, unsigned int *);
+	unsigned long getStart( ATP_ChunkResponse_t * );
+	void setStart( ATP_ChunkResponse_t *, unsigned long );
 
 	unsigned long getLength( ATP_ChunkResponse_t * );
 	void setLength( ATP_ChunkResponse_t *, unsigned long);

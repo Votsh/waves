@@ -33,15 +33,17 @@ along with ATP.  If not, see <http://www.gnu.org/licenses/>.
 #include "ATP.h"
 #include "Logging.h"
 #include <SoftwareSerial.h>
+#include <SD.h>
+#include <SPI.h>
 
 ATP atp = ATP();
 #define baudrate 9600
 int firsttime = 1;
 
-#define TEST_AS_LEAD 0
-#define TEST_AS_SCOUT 1
+#define TESTType 0
 
-#define TESTType TEST_AS_LEAD
+unsigned long pasttime = 0;
+unsigned long trcount = 0;
 
 void setup() {
   Serial.begin(baudrate);
@@ -55,15 +57,25 @@ void loop() {
   {
     firsttime=0;
     delay(3000);
-    //atp.Test();
-    
-    
-    
-    
-    
-    
-    
-    
+    atp.begin("XBEE");
+  }
+
+  atp.serviceRequests();
+
+  if ( trcount==0 )
+  {
+    trcount = random(60) + 600;  // since the loop delay is 100, 600 = 60 seconds, or 1 minute
+    atp.initiateTransferRequests();
+  }
+  trcount--;
+  
+  // Every 10 seconds
+  if ( millis() > pasttime + 10000 )
+  {
+    pasttime = millis();
+
+    atp.garbageCollection();
+    atp.print();
   }
   
   delay(100);

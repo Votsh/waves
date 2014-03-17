@@ -46,12 +46,6 @@ See the ChunkResponse.h file for definitions of the structs used by the methods.
 #include "ChunkRequest.h"
 #include "RadioDriver.h"
 
-/*- Variables --------------------------------------------------------------*/
-
-//todo: These variables and object instances are ugly. Should be sharing a single RadioDriver and UniqueIDCounter
-long UniqueIDCounter3 = 0;
-RadioDriver myrd2 = RadioDriver();
-
 /*- Implementations --------------------------------------------------------*/
 
 ChunkRequest::ChunkRequest(){}
@@ -60,11 +54,11 @@ ChunkRequest::ChunkRequest(){}
 \brief Return a new ChunkRequest object
 */
 
-ATP_ChunkRequest_t * ChunkRequest::getNewRequest()
+ATP_ChunkRequest_t * ChunkRequest::getNewRequest( int id )
 {
 	ATP_ChunkRequest_t * acr = (ATP_ChunkRequest_t *) malloc( sizeof(ATP_ChunkRequest_t) );
 	//todo: Test for a null response from malloc and handle as exception	
-	setDefaults( acr );
+	setDefaults( acr, id );
 	return acr;
 }
 
@@ -72,14 +66,15 @@ ATP_ChunkRequest_t * ChunkRequest::getNewRequest()
 \brief Sets header values for ChunkRequest
 */
 
-void ChunkRequest::setDefaults( ATP_ChunkRequest_t * header){	
+void ChunkRequest::setDefaults( ATP_ChunkRequest_t * header, int id){	
 
 	setFrameID( header, "FCC" );
-	setFrameType( header, ATP_TRANSFER_REQUEST );
+	setFrameType( header, ATP_CHUNK_REQUEST );
 	setMeshAddress( header, 0 );			// Pan address for XBee radios
 	setDatetime( header, millis() );	//todo: Replace this with the Time library or when you get a Real Time Clock
-	setAtpCount( header, UniqueIDCounter3++ );
+	setAtpID( header, id );
 	setVersion( header, 1 );
+	setStatus( header, ATP_IDLE );
 	
 	setStart( header, 0);
 	setLength( header, 0);
@@ -94,8 +89,9 @@ void ChunkRequest::print( ATP_ChunkRequest_t * frame ){
 	Log.Debug("frameType:     %d"CR, getFrameType(frame));	
 	Log.Debug("meshAddress:   %d"CR, getMeshAddress(frame));	
 	Log.Debug("datetime:      %d"CR, getDatetime(frame));	
-	Log.Debug("atpCount:      %d"CR, getAtpCount(frame)); 	
+	Log.Debug("atpCount:      %d"CR, getAtpID(frame)); 	
 	Log.Debug("version:       %d"CR, getVersion(frame));
+	Log.Debug("status:  	  %d"CR, getStatus(frame));
 	
 	Log.Debug("start:         %d"CR, getStart(frame));	
 	Log.Debug("length:        %s"CR, getLength(frame));	
@@ -121,12 +117,14 @@ void ChunkRequest::setMeshAddress( ATP_ChunkRequest_t * frame, unsigned int myme
 unsigned long long ChunkRequest::getDatetime( ATP_ChunkRequest_t * frame ){ return frame->datetime; }
 void ChunkRequest::setDatetime( ATP_ChunkRequest_t * frame, unsigned long long mytime){ frame->datetime = mytime; }
 
-unsigned long ChunkRequest::getAtpCount( ATP_ChunkRequest_t * frame ){ return frame->atpCount; }
-void ChunkRequest::setAtpCount( ATP_ChunkRequest_t * frame, unsigned long myval){ frame->atpCount = myval; }
+unsigned long ChunkRequest::getAtpID( ATP_ChunkRequest_t * frame ){ return frame->atpID; }
+void ChunkRequest::setAtpID( ATP_ChunkRequest_t * frame, unsigned long myval){ frame->atpID = myval; }
 
 unsigned int ChunkRequest::getVersion( ATP_ChunkRequest_t * frame ){ return frame->version; }
 void ChunkRequest::setVersion( ATP_ChunkRequest_t * frame, unsigned int myval){ frame->version = myval; }
 
+unsigned int ChunkRequest::getStatus( ATP_ChunkRequest_t * frame ){ return frame->status; }
+void ChunkRequest::setStatus( ATP_ChunkRequest_t * frame, unsigned int myval){ frame->status = myval; }
 
 unsigned long ChunkRequest::getStart( ATP_ChunkRequest_t * frame ){ return frame->start; }
 void ChunkRequest::setStart( ATP_ChunkRequest_t * frame, unsigned long myval){ frame->start = myval; }
@@ -136,35 +134,6 @@ void ChunkRequest::setLength( ATP_ChunkRequest_t * frame, unsigned long myval){ 
 
 unsigned int ChunkRequest::getTransferTypes( ATP_ChunkRequest_t * frame ){ return frame->transferTypes; }
 void ChunkRequest::setTransferTypes( ATP_ChunkRequest_t * frame, unsigned int myval){ frame->transferTypes = myval; }
-
-/*
-\brief Instantiate a new RadioDriver instance
-*/
-
-void ChunkRequest::setRadioDriverType(char * mytype)
-{
-	myrd2.setRadioType( mytype );
-	if ( myrd2.getStatus() ) 
-	{
-		Log.Debug("RadioDriver: getNewRadioDriver, status is 1"CR);	
-	}
-	else
-	{
-		Log.Debug("RadioDriver: getNewRadioDriver, status is 0"CR);	
-	}	
-}
-
-/*
-\brief Send a ChunkRequest to a remote host
-*/
-
-void ChunkRequest::sendIt( ATP_ChunkRequest_t * frame )
-{
-	Log.Debug("Sending message"CR);
-	myrd2.SendChunkRequest( frame );
-	Log.Debug("Message sent"CR);
-}
-
 
 /*getError() - returns error codedelete() - removes object and related data
 getNetworkTime(source);

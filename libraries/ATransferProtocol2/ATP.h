@@ -36,18 +36,39 @@ along with ATP.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Arduino.h"
 #include "StatusCodes.h"
+#include "RadioDriver.h"
+#include "TransferRequest.h"
+#include "ChunkRequest.h"
+#include "ChunkResponse.h"
+#include "Logging.h"
+#include <SD.h>
 
 /*- Definitions ------------------------------------------------------------*/
 
 #define LOGLEVEL LOG_LEVEL_DEBUG
 #define baudrate 9600
+#define SD_CARD_CS 6    // Card chip select pin
+#define CHUNKSIZE 500	// Default chunk size
+
+// Linked List definition
+
+typedef struct ATP_linkNode {
+  void *transfer;
+  struct ATP_linkNode *next;
+} ATP_linkNode;
 
 class ATP
 {
   public:
     ATP( void );
-    void Init( char * );
-    void Test(void);
+    void begin( char * );
+    void print(void);
+    void garbageCollection(void);
+    void initiateTransferRequests(void);
+    void serviceRequests(void);
+    void sendRequests(void);
+	ATP_linkNode * addNode();
+	ATP_linkNode * findNode( unsigned long );
   private:
 };
 

@@ -44,11 +44,6 @@ See the ChunkResponse.h file for definitions of the structs used by the methods.
 #include "RadioDriver.h"
 #include "ChunkResponse.h"
 
-/*- Variables --------------------------------------------------------------*/
-
-long UniqueIDCounter2 = 0;
-RadioDriver myrd3 = RadioDriver();
-
 /*- Implementations --------------------------------------------------------*/
 
 /*
@@ -61,11 +56,11 @@ ChunkResponse::ChunkResponse(){}
 \brief Return a new ChunkResponse object
 */
 
-ATP_ChunkResponse_t * ChunkResponse::getNewRequest()
+ATP_ChunkResponse_t * ChunkResponse::getNewRequest( int id )
 {
 	ATP_ChunkResponse_t * acr = (ATP_ChunkResponse_t *) malloc( sizeof(ATP_ChunkResponse_t) );
-	//todo: Test for a null response from malloc and handle as exception	
-	setDefaults( acr );
+	//todo: Test for a null response from malloc and handle as exception
+	setDefaults( acr, id );
 	return acr;
 }
 
@@ -73,16 +68,16 @@ ATP_ChunkResponse_t * ChunkResponse::getNewRequest()
 \brief Sets header values for ChunkResponse
 */
 
-void ChunkResponse::setDefaults( ATP_ChunkResponse_t * header){
+void ChunkResponse::setDefaults( ATP_ChunkResponse_t * header, int id){
 	
 	setFrameID( header, "FCC" );
-	setFrameType( header, ATP_TRANSFER_REQUEST );
+	setFrameType( header, ATP_CHUNK_RESPONSE );
 	setMeshAddress( header, 0 );			// Pan address for XBee radios
 	setDatetime( header, millis() );	//todo: Replace this with the Time library or when you get a Real Time Clock
-	setAtpCount( header, UniqueIDCounter2++ );
-	setVersion( header, 1 );
-	
+	setAtpID( header, id );
+	setVersion( header, 1 );	
 	setStatus( header, ATP_IDLE );
+	
 	setStart( header, 0 );
 	setLength( header, 1);	
 	setTransferTypes( header, 0 );
@@ -98,10 +93,10 @@ void ChunkResponse::print( ATP_ChunkResponse_t * frame ){
 	Log.Debug("frameType:     %d"CR, getFrameType(frame));	
 	Log.Debug("meshAddress:   %d"CR, getMeshAddress(frame));	
 	Log.Debug("datetime:      %d"CR, getDatetime(frame));	
-	Log.Debug("atpCount:      %d"CR, getAtpCount(frame)); 	
+	Log.Debug("atpCount:      %d"CR, getAtpID(frame)); 	
 	Log.Debug("version:       %d"CR, getVersion(frame));
+	Log.Debug("status:  	  %d"CR, getStatus(frame));
 	
-	Log.Debug("status:        %d"CR, getStatus(frame));
 	Log.Debug("start:         %d"CR, getStart(frame));	
 	Log.Debug("length:        %s"CR, getLength(frame));	
 	Log.Debug("transferTypes: %d"CR, getTransferTypes(frame));	
@@ -128,18 +123,17 @@ void ChunkResponse::setMeshAddress( ATP_ChunkResponse_t * frame, unsigned int my
 unsigned long long ChunkResponse::getDatetime( ATP_ChunkResponse_t * frame ){ return frame->datetime; }
 void ChunkResponse::setDatetime( ATP_ChunkResponse_t * frame, unsigned long long mytime){ frame->datetime = mytime; }
 
-unsigned long ChunkResponse::getAtpCount( ATP_ChunkResponse_t * frame ){ return frame->atpCount; }
-void ChunkResponse::setAtpCount( ATP_ChunkResponse_t * frame, unsigned long myval){ frame->atpCount = myval; }
+unsigned long ChunkResponse::getAtpID( ATP_ChunkResponse_t * frame ){ return frame->atpID; }
+void ChunkResponse::setAtpID( ATP_ChunkResponse_t * frame, unsigned long myval){ frame->atpID = myval; }
 
 unsigned int ChunkResponse::getVersion( ATP_ChunkResponse_t * frame ){ return frame->version; }
 void ChunkResponse::setVersion( ATP_ChunkResponse_t * frame, unsigned int myval){ frame->version = myval; }
 
-
 unsigned int ChunkResponse::getStatus( ATP_ChunkResponse_t * frame ){ return frame->status; }
 void ChunkResponse::setStatus( ATP_ChunkResponse_t * frame, unsigned int myval){ frame->status = myval; }
 
-unsigned int * ChunkResponse::getStart( ATP_ChunkResponse_t * frame ){ return frame->start; }
-void ChunkResponse::setStart( ATP_ChunkResponse_t * frame, unsigned int * myval){ frame->start = myval; }
+unsigned long ChunkResponse::getStart( ATP_ChunkResponse_t * frame ){ return frame->start; }
+void ChunkResponse::setStart( ATP_ChunkResponse_t * frame, unsigned long myval){ frame->start = myval; }
 
 unsigned long ChunkResponse::getLength( ATP_ChunkResponse_t * frame ){ return frame->length; }
 void ChunkResponse::setLength( ATP_ChunkResponse_t * frame, unsigned long myval ){ frame->length = myval; }
@@ -152,34 +146,6 @@ void ChunkResponse::setVerify( ATP_ChunkResponse_t * frame, unsigned int myval){
 
 unsigned int * ChunkResponse::getData( ATP_ChunkResponse_t * frame ){ return frame->data; }
 void ChunkResponse::setData( ATP_ChunkResponse_t * frame, unsigned int * myval){ frame->data = myval; }
-
-/*
-\brief Instantiate a new RadioDriver instance
-*/
-
-void ChunkResponse::setRadioDriverType(char * mytype)
-{
-	myrd3.setRadioType( mytype );
-	if ( myrd3.getStatus() ) 
-	{
-		Log.Debug("RadioDriver: getNewRadioDriver, status is 1"CR);	
-	}
-	else
-	{
-		Log.Debug("RadioDriver: getNewRadioDriver, status is 0"CR);	
-	}	
-}
-
-/*
-\brief Send a ChunkResponse to a remote host
-*/
-
-void ChunkResponse::sendIt( ATP_ChunkResponse_t * frame )
-{
-	Log.Debug("Sending message"CR);
-	myrd3.SendChunkResponse( frame );
-	Log.Debug("Message sent"CR);
-}
 
 
 /*

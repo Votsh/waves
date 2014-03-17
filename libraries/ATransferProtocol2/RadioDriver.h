@@ -57,12 +57,15 @@ class RadioDriver
 {
   public:
     RadioDriver();
-    void serviceRadio();					// Called to service incoming data
 	void Send( char * ); 		 	// Send data over the radio
 	void SendTransferRequest( ATP_TransferRequest_t * );	// Send a Transfer Request
 	void SendChunkRequest( ATP_ChunkRequest_t * );			// Send a ChunkRequest
-	void SendChunkResponse( ATP_ChunkResponse_t * );		// Send a ChunkResponse
+	void SendChunkResponseBuffer( ATP_ChunkResponse_t *, unsigned int * );		// Send a ChunkResponse using a buffer
+	void SendChunkResponseFile( ATP_ChunkResponse_t *, char * );		// Send a ChunkResponse	using a file
 	char * getReceived(); 			// Get a pointer to the received data
+	int isAvailable();				// Returns true if the radio received a character
+	unsigned int getReceivedInt();	// Get an int received
+	char getReceivedChar();			// Get a char received
 	unsigned int getStatus();
 	void setRadioType( char * );	// Sets type of driver: XBEE, LMW
 };

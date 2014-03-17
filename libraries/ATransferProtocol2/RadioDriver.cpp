@@ -110,6 +110,7 @@ void RadioDriver::SendTransferRequest( ATP_TransferRequest_t * frame )
         XBeeOnBreadboard.write( *byte );
     	delay(100);
     }
+    frame->status = ATP_SUCCESS;
     //XBeeOnBreadboard.println( "We are done." );
 }
 
@@ -127,6 +128,7 @@ void RadioDriver::SendChunkRequest( ATP_ChunkRequest_t * frame )
         XBeeOnBreadboard.write( *byte );
     	delay(100);
     }
+    frame->status = ATP_SUCCESS;
     //XBeeOnBreadboard.println( "We are done." );
 }
 
@@ -134,8 +136,19 @@ void RadioDriver::SendChunkRequest( ATP_ChunkRequest_t * frame )
 /brief Send a ChunkResponse struct over the radio, this is a blocking call
 */
 
-void RadioDriver::SendChunkResponse( ATP_ChunkResponse_t * frame )
+//todo Send to specific radio end points
+
+void RadioDriver::SendChunkResponseBuffer( ATP_ChunkResponse_t * frame, unsigned int * buffer )
 {
+	// Calculate checksum value
+	
+	unsigned int checksum = 0;
+	for ( int c = 0; c < frame->length; c++ )
+	{
+		checksum = checksum + buffer[c];		
+	}
+	frame->verify = checksum;
+
 	long size = sizeof(ATP_ChunkResponse_t);		
     const unsigned char *byte;
     for ( byte = (const unsigned char *) frame; size--; ++byte )                                     
@@ -144,18 +157,80 @@ void RadioDriver::SendChunkResponse( ATP_ChunkResponse_t * frame )
         XBeeOnBreadboard.write( *byte );
     	delay(100);
     }
+    
+    size = frame->length;
+    for ( byte = (const unsigned char *) buffer + frame->start; size--; ++byte )                                     
+    {   
+    	//Log.Debug("size=%d byte=%c"CR,size,*byte);
+        XBeeOnBreadboard.write( *byte );
+    	delay(100);
+    }
+    frame->status = ATP_SUCCESS;
+    
+    //todo Handle exceptions
+    
     //XBeeOnBreadboard.println( "We are done." );
 }
 
 /*
-/brief Service incoming data and oher interrupts
+/brief Send a ChunkResponse struct over the radio, this is a blocking call
 */
 
-void RadioDriver::serviceRadio()
+void RadioDriver::SendChunkResponseFile( ATP_ChunkResponse_t * frame, char * thefile )
 {
+	// Calculate checksum value
+	unsigned int * buffer = frame->data;
+	
+	unsigned int checksum = 0;
+	for ( int c = 0; c < frame->length; c++ )
+	{
+		checksum = checksum + buffer[c];		
+	}
+	frame->verify = checksum;
+
+	long size = sizeof(ATP_ChunkResponse_t);		
+    const unsigned char *byte;
+    for ( byte = (const unsigned char *) frame; size--; ++byte )                                     
+    {   
+    	//Log.Debug("size=%d byte=%c"CR,size,*byte);
+        XBeeOnBreadboard.write( *byte );
+    	delay(100);
+    }
+    
+    size = frame->length;
+    for ( byte = (const unsigned char *) buffer + frame->start; size--; ++byte )                                     
+    {   
+    	//Log.Debug("size=%d byte=%c"CR,size,*byte);
+        XBeeOnBreadboard.write( *byte );
+    	delay(100);
+    }
+    
+    frame->status = ATP_SUCCESS;
+    //todo Handle exceptions
 }
 
-// Get a pointer to the received data
+/*
+/brief Returns true if the radio received a character
+*/
+
+int RadioDriver::isAvailable(){ return XBeeOnBreadboard.available(); }
+
+/*
+/brief Get an int received
+*/
+
+unsigned int RadioDriver::getReceivedInt(){ return XBeeOnBreadboard.read(); }
+
+/*
+/brief Get an int received
+*/
+
+char RadioDriver::getReceivedChar(){ return XBeeOnBreadboard.read(); }
+
+/*
+/brief Get a pointer to the received data
+*/
+
 char * RadioDriver::getReceived()
 {
 	for (int i=0; i<14; i++ )
