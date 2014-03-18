@@ -62,7 +62,7 @@ class RadioDriver
 	void SendChunkRequest( ATP_ChunkRequest_t * );			// Send a ChunkRequest
 	void SendChunkResponseBuffer( ATP_ChunkResponse_t *, unsigned int * );		// Send a ChunkResponse using a buffer
 	void SendChunkResponseFile( ATP_ChunkResponse_t *, char * );		// Send a ChunkResponse	using a file
-	char * getReceived(); 			// Get a pointer to the received data
+	//char * getReceived(); 			// Get a pointer to the received data
 	int isAvailable();				// Returns true if the radio received a character
 	unsigned int getReceivedInt();	// Get an int received
 	char getReceivedChar();			// Get a char received

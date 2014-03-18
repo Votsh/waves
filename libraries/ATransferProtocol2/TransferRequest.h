@@ -49,7 +49,7 @@ typedef struct ATP_TransferRequest_t
   char			frameID[3];
   int			frameType;
   long			meshAddress;
-  unsigned long long	datetime;
+  unsigned long	datetime;
   unsigned long	atpID;
   unsigned int 	version;
   unsigned int	status;
@@ -69,9 +69,9 @@ typedef struct ATP_TransferRequest_t
 
 typedef enum
 {
-  ATP_TRANSFER_REQUEST		= 0x00,
-  ATP_CHUNK_REQUEST			= 0x01,
-  ATP_CHUNK_RESPONSE		= 0x02,	
+  ATP_TRANSFER_REQUEST		= 0,
+  ATP_CHUNK_REQUEST			= 1,
+  ATP_CHUNK_RESPONSE		= 2,	
 } ATP_RequestType_t;
 
 /*- Variables --------------------------------------------------------------*/
@@ -96,8 +96,8 @@ class TransferRequest
 	unsigned int getMeshAddress( ATP_TransferRequest_t * );
 	void setMeshAddress( ATP_TransferRequest_t *, unsigned int);
 
-	unsigned long long getDatetime( ATP_TransferRequest_t * );
-	void setDatetime( ATP_TransferRequest_t *, unsigned long long);
+	unsigned long getDatetime( ATP_TransferRequest_t * );
+	void setDatetime( ATP_TransferRequest_t *, unsigned long);
 
 	unsigned long getAtpID( ATP_TransferRequest_t * );
 	void setAtpID( ATP_TransferRequest_t *, unsigned long);

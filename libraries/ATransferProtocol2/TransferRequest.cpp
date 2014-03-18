@@ -75,19 +75,19 @@ ATP_TransferRequest_t * TransferRequest::getNewRequest( int id )
 
 void TransferRequest::setDefaults( ATP_TransferRequest_t * header, int id ){
 	
-	setFrameID( header, "FCC" );
+	setFrameID( header, "ATP" );
 	setFrameType( header, ATP_TRANSFER_REQUEST );
 	setMeshAddress( header, 0 );			// Pan address for XBee radios
-	setDatetime( header, millis() );	//todo: Replace this with the Time library or when you get a Real Time Clock
+	setDatetime( header, (unsigned long) millis() );
 	setAtpID( header, id );
 	setVersion( header, 1 );
 	setStatus( header, ATP_IDLE );
 	// Do not change the above members of the struct. The app.cpp dispatcher requires these.
 	
-	setSize( header, 1000 );
-	setExpires( header, 6789 );
+	setSize( header, 0 );
+	setExpires( header, 0 );
 	setDescriptor( header, "CC");	
-	setSource( header, 0 );
+	setSource( header, 0 );		//todo Implement for Pinoccio Scouts, right now we're using XBee radios in direct connect mode
 	setDestination( header, 0 );
 	setFileName( header, "" );
 }
@@ -99,7 +99,7 @@ void TransferRequest::print( ATP_TransferRequest_t * frame ){
 	Log.Debug("frameID:     %s"CR, getFrameID(frame));
 	Log.Debug("frameType:   %d"CR, getFrameType(frame));	
 	Log.Debug("meshAddress: %d"CR, getMeshAddress(frame));	
-	Log.Debug("datetime:    %d"CR, getDatetime(frame));	
+	Log.Debug("datetime:    %l"CR, getDatetime(frame));	
 	Log.Debug("atpCount:    %d"CR, getAtpID(frame)); 	
 	Log.Debug("version:     %d"CR, getVersion(frame));
 
@@ -116,6 +116,9 @@ void TransferRequest::print( ATP_TransferRequest_t * frame ){
 	Log.Debug("source:      %d"CR, getSource(frame));	
 	Log.Debug("destination: %d"CR, getDestination(frame));	
 	Log.Debug("fileName:    %s"CR, getFileName(frame));
+	
+	Log.Debug("buffer:      %s"CR, getBuffer(frame));
+	Log.Debug("---"CR);
 }
 /*
 \brief Getters and Setters
@@ -134,8 +137,8 @@ void TransferRequest::setFrameType( ATP_TransferRequest_t * frame, unsigned int 
 unsigned int TransferRequest::getMeshAddress( ATP_TransferRequest_t * frame ){ return frame->meshAddress; }
 void TransferRequest::setMeshAddress( ATP_TransferRequest_t * frame, unsigned int mymesh){ frame->meshAddress = mymesh; }
 
-unsigned long long TransferRequest::getDatetime( ATP_TransferRequest_t * frame ){ return frame->datetime; }
-void TransferRequest::setDatetime( ATP_TransferRequest_t * frame, unsigned long long mytime){ frame->datetime = mytime; }
+unsigned long TransferRequest::getDatetime( ATP_TransferRequest_t * frame ){ return frame->datetime; }
+void TransferRequest::setDatetime( ATP_TransferRequest_t * frame, unsigned long mytime){ frame->datetime = mytime; }
 
 unsigned long TransferRequest::getAtpID( ATP_TransferRequest_t * frame ){ return frame->atpID; }
 void TransferRequest::setAtpID( ATP_TransferRequest_t * frame, unsigned long myval){ frame->atpID = myval; }

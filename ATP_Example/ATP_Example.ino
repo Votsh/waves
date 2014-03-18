@@ -42,8 +42,9 @@ int firsttime = 1;
 
 #define TESTType 0
 
-unsigned long trcounter = millis() + 60000;
-unsigned long gccounter = millis() + 10000;
+unsigned long trcounter;
+unsigned long gccounter;
+int dotcount;
 
 void setup() {
   Serial.begin(baudrate);
@@ -55,26 +56,36 @@ void loop() {
 
   if (firsttime==1)
   {
+    trcounter = millis() + 10000;
+    gccounter = millis() + 30000;
     firsttime=0;
+    dotcount=0;
     delay(3000);
     atp.begin("XBEE");
+
+    delay(3000);
+    atp.initiateTransferRequest();
+
   }
 
   atp.serviceRequests();
 
-  if ( millis() > trcounter + 60000 )
+  //atp.sendRequests();
+
+  if ( millis() > trcounter )
   {
-    atp.initiateTransferRequest();
-    trcounter = millis();
+    //atp.initiateTransferRequest();
+    trcounter = millis() + 30000;
   }
   
   // Every 10 seconds
-  if ( millis() > gccounter + 10000 )
+  if ( millis() > gccounter )
   {
-    atp.garbageCollection();
+    //atp.garbageCollection();
     atp.print();
-    gccounter = millis();
+    gccounter = millis() + 10000;
   }
   
+  if (dotcount++>10) { Log.Debug("."CR); dotcount=0;} else Log.Debug(".");
   delay(1000);
 }

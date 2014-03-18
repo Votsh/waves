@@ -39,8 +39,9 @@ ATP_linkNode * conductor = 0;
 ATP_linkNode * prevnode = 0;
 void * transobj = 0;
 int recIndex = 0;
-int timeout = 0;
-unsigned int transID = 0;
+int SDStatus = 0;					// SD card status, 1 = ok, 2 = failed
+unsigned long timeout = 0;
+unsigned int transID = 1;
 char atpHeader[] = "ATP";
 TransferRequest tro = TransferRequest();
 ChunkRequest creqo = ChunkRequest();
@@ -72,13 +73,17 @@ void ATP::begin( char * driverType )
 	}
 
     if (!SD.begin( SD_CARD_CS )) {
-      Log.Error("SD: Fail"CR);
+      Log.Error("SD fail"CR);
+      SDStatus = 0;
       return;
     }
     else
     {
-	    Log.Debug("SD: OK"CR);
+      Log.Debug("SD: OK"CR);
+      SDStatus = 1;
     }
+
+    timeout=0;
 }
 
 /*
@@ -89,23 +94,34 @@ void ATP::serviceRequests(void)
 {
 	if ( rd.isAvailable() )
 	{
+		Log.Debug("t%d"CR,timeout);
+
 		// Handle timeouts
-		if ( timeout++ > (1000*60*1) )
+		timeout++;
+		if ( timeout > 60 )
 		{
 			timeout = 0;
 			recIndex = 0;
+			Log.Debug("+");
 		}
 		
-		int rc = rd.getReceivedInt();
+		unsigned int rc = rd.getReceivedInt();
+		
+		Log.Debug("!%c-%c-%i"CR,rc,atpHeader[ recIndex ], recIndex);
+
+		
 		if ( recIndex < 3 )
 		{
-			if ( rc == atpHeader[ recIndex ] )
+			if ( rc == (int) atpHeader[ recIndex ] )
 			{
 				recIndex++;
+							Log.Debug("#");
+
 			}
 			else
 			{
-				recIndex=0;
+				recIndex=0;			Log.Debug("@");
+
 				return;
 			}
 		}
@@ -115,35 +131,38 @@ void ATP::serviceRequests(void)
 			if ( rc == ATP_TRANSFER_REQUEST )
 			{
 				// You received a TransferRequest
-
-				timeout = 0;
+				Log.Debug("Rec TR"CR);
 				
+				// Add the TR to the linked list
+
 				ATP_linkNode * lnknode = addNode();
 				if ( lnknode == 0 ) { return; }
-				
-				Log.Debug("ATP: Rec TR");
-				//todo: For LWM the frame comes in at once, no getting the rest
-				
-				int i = 0;
+								
+				int i = 4;
 				char * head = (char *)(lnknode->transfer);
 				*head++ = 'A';
 				*head++ = 'T';
 				*head++ = 'P';
 				*head++ = ATP_TRANSFER_REQUEST;
 
-				// get the rest of it
-				while ( timeout++ < ( 1000 * 10 ) )
+				// get the rest of the frame from the radio
+
+				Log.Debug("sizeof %d"CR, sizeof( ATP_TransferRequest_t ));
+				
+				timeout = millis() + 10000;		// Wait up to 10 seconds
+				while ( millis() < timeout )
 				{
 					if ( rd.isAvailable() )
 					{
-						if (i > sizeof( ATP_TransferRequest_t ) - 4 ) { break; }
+						if (i > sizeof( ATP_TransferRequest_t ) ) { break; }
 						*head++ = rd.getReceivedInt();
+						Log.Debug("i=%d"CR,i);
 					}
 				}
 				
-				if ( timeout = ( 1000 * 10 ) )
+				if ( millis() >= timeout )
 				{
-					Log.Error("ATP: TR Timeout"CR);
+					Log.Error("TR Timeout"CR);
 					timeout = 0;
 					return;	
 				}
@@ -154,11 +173,12 @@ void ATP::serviceRequests(void)
 				{
 					// We're going to transfer into an in-memory buffer
 					
-					Log.Debug( "TR: Allocate %d"CR, ( (ATP_TransferRequest_t *) (lnknode->transfer) ) -> size );
-					( (ATP_TransferRequest_t *) (lnknode->transfer) ) -> buffer = (unsigned int *) malloc( ( (ATP_TransferRequest_t *) (lnknode->transfer) ) -> size );
+					Log.Debug( "Allocate %d"CR, ( (ATP_TransferRequest_t *) (lnknode->transfer) ) -> size );
+					( (ATP_TransferRequest_t *) (lnknode->transfer) ) -> buffer = 
+					(unsigned int *) malloc( ( (ATP_TransferRequest_t *) (lnknode->transfer) ) -> size );
 					if ( ( (ATP_TransferRequest_t *) (lnknode->transfer) ) -> buffer == 0 )
 					{
-						Log.Error("TR: Fail"CR);
+						Log.Error("TR fail"CR);
 						return;						
 					}
 				}
@@ -166,19 +186,30 @@ void ATP::serviceRequests(void)
 				{
 					// We're going to transfer into a file on the SD card
 					// create the file and populate it with 0 bytes of the TR size
-					File myFile = SD.open( ( (ATP_TransferRequest_t *) (lnknode->transfer) ) -> fileName, FILE_WRITE);
-					
-					if ( myFile == 0 ){
-						Log.Error("TF: File error %s"CR, ( (ATP_TransferRequest_t *) (lnknode->transfer) ) -> fileName );
-						return;
-					}
-										
-					for ( unsigned long j=0; j < ( (ATP_TransferRequest_t *) (lnknode->transfer) ) -> size; j++ )
-					{
-						myFile.print( 0 );	
-					}
 
-  					myFile.close();
+					if ( SDStatus == 1 )
+					{
+						File myFile = SD.open( ( (ATP_TransferRequest_t *) (lnknode->transfer) ) -> 
+						fileName, FILE_WRITE);
+						
+						if ( myFile == 0 ){
+							Log.Error("File error %s"CR, ( (ATP_TransferRequest_t *) (lnknode->transfer) ) -> 
+							fileName );
+							return;
+						}
+											
+						for ( unsigned long j=0; j < ( (ATP_TransferRequest_t *) (lnknode->transfer) ) ->
+						size; j++ )
+						{
+							myFile.print( 0 );	
+						}
+	
+	  					myFile.close();
+					}
+					else
+					{
+						Log.Error("SD unavailable"CR);
+					}
 				}
 				
 				// Calculate the chunk size
@@ -205,7 +236,8 @@ void ATP::serviceRequests(void)
 			else if ( rc = ATP_CHUNK_REQUEST )
 			{
 				// Received a ChunkRequest
-				
+				Log.Debug("Rec CRq"CR);
+								
 				timeout = 0;
 				
 				ATP_linkNode * lnknode = addNode();
@@ -232,14 +264,15 @@ void ATP::serviceRequests(void)
 				
 				if ( timeout = ( 1000 * 10 ) )
 				{
-					Log.Error("ATP: CRQ timeout"CR);
+					Log.Error("CRQ timeout"CR);
 					timeout = 0;
 					return;	
 				}
 				
 				// Create a new ChunkResponse
 				
-				ATP_ChunkResponse_t * ncr = crespo.getNewRequest( ( (ATP_TransferRequest_t *) (lnknode->transfer) ) -> atpID );
+				ATP_ChunkResponse_t * ncr = crespo.getNewRequest( ( (ATP_TransferRequest_t *) 
+				(lnknode->transfer) ) -> atpID );
 				ATP_linkNode * lnknodeResponse = addNode();
 				if ( lnknodeResponse == 0 ) { return; }
 				lnknodeResponse->transfer = ncr;
@@ -273,8 +306,8 @@ void ATP::serviceRequests(void)
 			}
 			else if ( rc = ATP_CHUNK_RESPONSE )
 			{
-
 				// Received a ChunkResponse, save the data to the buffer or file
+				Log.Debug("Rec CRsp"CR);
 				
 				timeout = 0;
 				
@@ -304,7 +337,7 @@ void ATP::serviceRequests(void)
 				
 				if ( timeout = ( 1000 * 10 ) )
 				{
-					Log.Error("ATP: CRSP Timeout"CR);
+					Log.Error("CRSP Timeout"CR);
 					timeout = 0;
 					return;	
 				}
@@ -357,7 +390,7 @@ void ATP::serviceRequests(void)
 								
 				if ( timeout = ( 1000 * 10 ) )
 				{
-					Log.Error("ATP: CRSP timeout 2"CR);
+					Log.Error("CRSP timeout 2"CR);
 					timeout = 0;
 					return;	
 				}
@@ -366,14 +399,14 @@ void ATP::serviceRequests(void)
 
 				if ( ( (ATP_ChunkResponse_t *) (lnknode->transfer) ) -> verify != checksum )			
 				{
-					Log.Error("ATP: Checksum fail"CR);
+					Log.Error("Checksum verify fail"CR);
 				}
 				//todo if the checksum fails, retry
 				
 			}
 			else
 			{
-				Log.Error("ATP: Unknown type"CR);
+				Log.Error("Unknown type"CR);
 				return;
 			}
 		}				
@@ -413,12 +446,14 @@ void ATP::sendRequests(void){
 				if ( ( (ATP_TransferRequest_t *) theTR->transfer ) -> fileName[0]==0 )
 				{
 					// We are transfering from an in-memory buffer
-					rd.SendChunkResponseBuffer( (ATP_ChunkResponse_t *) conductor->transfer, ((ATP_TransferRequest_t *) theTR->transfer ) -> buffer );				
+					rd.SendChunkResponseBuffer( (ATP_ChunkResponse_t *) conductor->transfer, 
+					((ATP_TransferRequest_t *) theTR->transfer ) -> buffer );				
 				}
 				else
 				{
 					// We are transfering from a file on the SD card
-					rd.SendChunkResponseFile( (ATP_ChunkResponse_t *) conductor->transfer, ((ATP_TransferRequest_t *) theTR->transfer ) -> fileName );				
+					rd.SendChunkResponseFile( (ATP_ChunkResponse_t *) conductor->transfer, 
+					((ATP_TransferRequest_t *) theTR->transfer ) -> fileName );				
 				}
 			}
         }
@@ -452,7 +487,7 @@ void ATP::print(void){
 		}
 		else
 		{
-			Log.Error("ATP: Unknown %d"CR,((ATP_TransferRequest_t *) transobj ) ->frameType);
+			Log.Error("Unknown %d"CR,((ATP_TransferRequest_t *) transobj ) ->frameType);
 		}
 
 	    conductor = conductor->next;
@@ -514,12 +549,16 @@ void ATP::garbageCollection(void){
 
 void ATP::initiateTransferRequest(void)
 {
-	Log.Info("ATP initiateTransferRequest"CR);
+	Log.Info("initiateTransferRequest"CR);
 
 	ATP_linkNode * lnknode = addNode();
 	if ( lnknode == 0 ) { return; }
 
 	ATP_TransferRequest_t * rq = tro.getNewRequest( transID++ );
+	tro.setExpires( rq, 60000 );	// expires in 60 seconds
+	tro.setSize( rq, 16 );
+	tro.setFileName( rq, "frank.txt" );
+	tro.setBuffer( rq, (unsigned int *) "Greetings oh brave new world" );
 	
 	// If you are sending a buffer over the radio, use this:
 	
@@ -527,7 +566,7 @@ void ATP::initiateTransferRequest(void)
 	unsigned int * thebuffer = (unsigned int *) malloc( CHUNKSIZE * 3 );
 	if ( thebuffer == 0 )
 	{
-		Log.Error( "initiateTransferRequest: Unable to allocate buffer"CR);
+		Log.Error( "Allocate buffer fail"CR );
 		return;
 	}
 	rq.setBuffer( thebuffer );
@@ -541,6 +580,8 @@ void ATP::initiateTransferRequest(void)
 	lnknode->next = 0;
 
 	rd.SendTransferRequest( rq );
+	timeout=0;
+
 	Log.Debug("ATP: TRQ sent"CR);	
 }
 
@@ -554,7 +595,7 @@ ATP_linkNode * ATP::addNode(){
 	ATP_linkNode * lnknode = (ATP_linkNode *) malloc( sizeof(ATP_linkNode) );
 	if (lnknode == 0)
 	{
-		Log.Error("ATP: OOM"CR);
+		Log.Error("OOM"CR);
 		return 0;
 	}
 	

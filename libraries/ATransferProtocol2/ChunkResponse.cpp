@@ -70,7 +70,7 @@ ATP_ChunkResponse_t * ChunkResponse::getNewRequest( int id )
 
 void ChunkResponse::setDefaults( ATP_ChunkResponse_t * header, int id){
 	
-	setFrameID( header, "FCC" );
+	setFrameID( header, "ATP" );
 	setFrameType( header, ATP_CHUNK_RESPONSE );
 	setMeshAddress( header, 0 );			// Pan address for XBee radios
 	setDatetime( header, millis() );	//todo: Replace this with the Time library or when you get a Real Time Clock
