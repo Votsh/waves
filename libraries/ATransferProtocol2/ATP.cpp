@@ -64,19 +64,21 @@ void ATP::begin( char * driverType )
 	rd.setRadioType( "XBEE" );
 	if ( rd.getStatus() ) 
 	{
-		Log.Debug("RadioDriver: getNewRadioDriver, status is 1"CR);	
+		Log.Debug("RD: 1"CR);	
 	}
 	else
 	{
-		Log.Debug("RadioDriver: getNewRadioDriver, status is 0"CR);	
+		Log.Debug("RD: 0"CR);	
 	}
 
     if (!SD.begin( SD_CARD_CS )) {
-      Log.Error("SD card failed to start, or not present"CR);
+      Log.Error("SD: Fail"CR);
       return;
     }
-    Log.Debug("SD card ok"CR);
-
+    else
+    {
+	    Log.Debug("SD: OK"CR);
+    }
 }
 
 /*
@@ -119,6 +121,7 @@ void ATP::serviceRequests(void)
 				ATP_linkNode * lnknode = addNode();
 				if ( lnknode == 0 ) { return; }
 				
+				Log.Debug("ATP: Rec TR");
 				//todo: For LWM the frame comes in at once, no getting the rest
 				
 				int i = 0;
@@ -140,7 +143,7 @@ void ATP::serviceRequests(void)
 				
 				if ( timeout = ( 1000 * 10 ) )
 				{
-					Log.Error("TransferRequest reception timeout."CR);
+					Log.Error("ATP: TR Timeout"CR);
 					timeout = 0;
 					return;	
 				}
@@ -151,11 +154,11 @@ void ATP::serviceRequests(void)
 				{
 					// We're going to transfer into an in-memory buffer
 					
-					Log.Debug( "TransferRequest: Allocated buffer of size %d"CR, ( (ATP_TransferRequest_t *) (lnknode->transfer) ) -> size );
+					Log.Debug( "TR: Allocate %d"CR, ( (ATP_TransferRequest_t *) (lnknode->transfer) ) -> size );
 					( (ATP_TransferRequest_t *) (lnknode->transfer) ) -> buffer = (unsigned int *) malloc( ( (ATP_TransferRequest_t *) (lnknode->transfer) ) -> size );
 					if ( ( (ATP_TransferRequest_t *) (lnknode->transfer) ) -> buffer == 0 )
 					{
-						Log.Error("TransferRequest: Failed to allocate buffer."CR);
+						Log.Error("TR: Fail"CR);
 						return;						
 					}
 				}
@@ -166,7 +169,7 @@ void ATP::serviceRequests(void)
 					File myFile = SD.open( ( (ATP_TransferRequest_t *) (lnknode->transfer) ) -> fileName, FILE_WRITE);
 					
 					if ( myFile == 0 ){
-						Log.Error("TransferRequest: Unable to open file %s"CR, ( (ATP_TransferRequest_t *) (lnknode->transfer) ) -> fileName );
+						Log.Error("TF: File error %s"CR, ( (ATP_TransferRequest_t *) (lnknode->transfer) ) -> fileName );
 						return;
 					}
 										
@@ -183,7 +186,7 @@ void ATP::serviceRequests(void)
 				
 				double chunk_count = ( ( (ATP_TransferRequest_t *) (lnknode->transfer) ) -> size ) / CHUNKSIZE;
 
-				Log.Debug("Transfer request requires %d chunks at %d bytes per chunk"CR, chunk_count, CHUNKSIZE );
+				Log.Debug("TR: %d chunks, %d bytes"CR, chunk_count, CHUNKSIZE );
 				
 				//Add the number of ChunkRequests to the linked list
 
@@ -193,7 +196,7 @@ void ATP::serviceRequests(void)
 					ATP_linkNode * lnknode = addNode();
 					if ( lnknode == 0 ) { return; }
 					lnknode->transfer = ncr;
-					Log.Debug("Added new ChunkRequest"CR);
+					Log.Debug("ATP: New CRQ"CR);
 				}
 
 				//todo Back out of the ChunkRequests if a malloc fails
@@ -229,7 +232,7 @@ void ATP::serviceRequests(void)
 				
 				if ( timeout = ( 1000 * 10 ) )
 				{
-					Log.Error("ChunkRequest reception timeout."CR);
+					Log.Error("ATP: CRQ timeout"CR);
 					timeout = 0;
 					return;	
 				}
@@ -275,6 +278,8 @@ void ATP::serviceRequests(void)
 				
 				timeout = 0;
 				
+				Log.Debug("ATP: Recv CRSP"CR);
+				
 				ATP_linkNode * lnknode = addNode();
 				if ( lnknode == 0 ) { return; }
 				
@@ -299,7 +304,7 @@ void ATP::serviceRequests(void)
 				
 				if ( timeout = ( 1000 * 10 ) )
 				{
-					Log.Error("ChunkResponse header reception timeout."CR);
+					Log.Error("ATP: CRSP Timeout"CR);
 					timeout = 0;
 					return;	
 				}
@@ -352,7 +357,7 @@ void ATP::serviceRequests(void)
 								
 				if ( timeout = ( 1000 * 10 ) )
 				{
-					Log.Error("ChunkResponse data reception timeout."CR);
+					Log.Error("ATP: CRSP timeout 2"CR);
 					timeout = 0;
 					return;	
 				}
@@ -361,14 +366,14 @@ void ATP::serviceRequests(void)
 
 				if ( ( (ATP_ChunkResponse_t *) (lnknode->transfer) ) -> verify != checksum )			
 				{
-					Log.Error("ChunkResponse failed the checksum validation"CR);
+					Log.Error("ATP: Checksum fail"CR);
 				}
 				//todo if the checksum fails, retry
 				
 			}
 			else
 			{
-				Log.Error("Unknown object type"CR);
+				Log.Error("ATP: Unknown type"CR);
 				return;
 			}
 		}				
@@ -447,7 +452,7 @@ void ATP::print(void){
 		}
 		else
 		{
-			Log.Error("Unknown object of type: %d"CR,((ATP_TransferRequest_t *) transobj ) ->frameType);
+			Log.Error("ATP: Unknown %d"CR,((ATP_TransferRequest_t *) transobj ) ->frameType);
 		}
 
 	    conductor = conductor->next;
@@ -468,7 +473,7 @@ void ATP::garbageCollection(void){
 	prevnode = 0;
 	while ( conductor != NULL ) {
 		
-		Log.Info("ATP::print %d"CR, i++);
+		Log.Info("ATP: GC %d"CR, i++);
 		
 		//todo remove only TransferRequests, and then remove all associated ChunkRequests
 		//and if we are a receiver then delete the file or buffer
@@ -477,7 +482,7 @@ void ATP::garbageCollection(void){
 		ATP_TransferRequest_t * transobj = (ATP_TransferRequest_t *) conductor->transfer;
 		if ( transobj->datetime < millis() + (1000*60*10) )
 		{
-			Log.Debug("garbageCollection: Removing item %d"CR, ((ATP_TransferRequest_t *) transobj ) -> atpID );
+			Log.Debug("GC: Removing %d"CR, ((ATP_TransferRequest_t *) transobj ) -> atpID );
 			if (prevnode==0)
 			{
 				// Deleting the rootnode
@@ -507,7 +512,7 @@ void ATP::garbageCollection(void){
  @brief Initiate transfer requests randomly
 */
 
-void ATP::initiateTransferRequests(void)
+void ATP::initiateTransferRequest(void)
 {
 	Log.Info("ATP initiateTransferRequest"CR);
 
@@ -535,10 +540,8 @@ void ATP::initiateTransferRequests(void)
 	lnknode->transfer = rq;
 	lnknode->next = 0;
 
-	Log.Debug("Sending message"CR);
 	rd.SendTransferRequest( rq );
-	Log.Debug("Message sent"CR);
-	
+	Log.Debug("ATP: TRQ sent"CR);	
 }
 
 /*
@@ -551,7 +554,7 @@ ATP_linkNode * ATP::addNode(){
 	ATP_linkNode * lnknode = (ATP_linkNode *) malloc( sizeof(ATP_linkNode) );
 	if (lnknode == 0)
 	{
-		Log.Error("initiateTransferRequest: Out of memory on new ATP_linkNode"CR);
+		Log.Error("ATP: OOM"CR);
 		return 0;
 	}
 	

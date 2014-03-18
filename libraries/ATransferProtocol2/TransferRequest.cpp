@@ -102,8 +102,14 @@ void TransferRequest::print( ATP_TransferRequest_t * frame ){
 	Log.Debug("datetime:    %d"CR, getDatetime(frame));	
 	Log.Debug("atpCount:    %d"CR, getAtpID(frame)); 	
 	Log.Debug("version:     %d"CR, getVersion(frame));
-	Log.Debug("status:      %d"CR, getStatus(frame));
-		
+
+	if ( getStatus(frame) == ATP_IDLE ) Log.Debug("status:      ATP_IDLE"CR );
+	if ( getStatus(frame) == ATP_SUCCESS ) Log.Debug("status:      ATP_SUCCESS"CR );
+	if ( getStatus(frame) == ATP_FAILED_DURING_TRANSIT ) Log.Debug("status:      ATP_FAILED_DURING_TRANSIT"CR );
+	if ( getStatus(frame) == ATP_FAILED_CHECKSUM ) Log.Debug("status:      ATP_FAILED_CHECKSUM"CR );
+	if ( getStatus(frame) == ATP_FAILED_ENCRYPTION ) Log.Debug("status:      ATP_FAILED_ENCRYPTION"CR );
+	if ( getStatus(frame) == ATP_FAILED_COMPRESSION ) Log.Debug("status:      ATP_FAILED_COMPRESSION"CR );
+	
 	Log.Debug("size:        %d"CR, getSize(frame));
 	Log.Debug("expires:     %d"CR, getExpires(frame));	
 	Log.Debug("descriptor:  %s"CR, getDescriptor(frame));	

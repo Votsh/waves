@@ -42,8 +42,8 @@ int firsttime = 1;
 
 #define TESTType 0
 
-unsigned long pasttime = 0;
-unsigned long trcount = 0;
+unsigned long trcounter = millis() + 60000;
+unsigned long gccounter = millis() + 10000;
 
 void setup() {
   Serial.begin(baudrate);
@@ -62,21 +62,19 @@ void loop() {
 
   atp.serviceRequests();
 
-  if ( trcount==0 )
+  if ( millis() > trcounter + 60000 )
   {
-    trcount = random(60) + 600;  // since the loop delay is 100, 600 = 60 seconds, or 1 minute
-    atp.initiateTransferRequests();
+    atp.initiateTransferRequest();
+    trcounter = millis();
   }
-  trcount--;
   
   // Every 10 seconds
-  if ( millis() > pasttime + 10000 )
+  if ( millis() > gccounter + 10000 )
   {
-    pasttime = millis();
-
     atp.garbageCollection();
     atp.print();
+    gccounter = millis();
   }
   
-  delay(100);
+  delay(1000);
 }
