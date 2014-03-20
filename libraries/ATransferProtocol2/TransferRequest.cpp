@@ -90,6 +90,7 @@ void TransferRequest::setDefaults( ATP_TransferRequest_t * header, int id ){
 	setSource( header, 0 );		//todo Implement for Pinoccio Scouts, right now we're using XBee radios in direct connect mode
 	setDestination( header, 0 );
 	setFileName( header, "" );
+	setBuffer( header, 0 );
 }
 /*
 \brief Prints ATP_TransferRequest_t type to the logger for debugging
@@ -100,7 +101,7 @@ void TransferRequest::print( ATP_TransferRequest_t * frame ){
 	Log.Debug("frameType:   %d"CR, getFrameType(frame));	
 	Log.Debug("meshAddress: %d"CR, getMeshAddress(frame));	
 	Log.Debug("datetime:    %l"CR, getDatetime(frame));	
-	Log.Debug("atpCount:    %d"CR, getAtpID(frame)); 	
+	Log.Debug("atpID:       %d"CR, getAtpID(frame)); 	
 	Log.Debug("version:     %d"CR, getVersion(frame));
 
 	if ( getStatus(frame) == ATP_IDLE ) Log.Debug("status:      ATP_IDLE"CR );
@@ -117,8 +118,9 @@ void TransferRequest::print( ATP_TransferRequest_t * frame ){
 	Log.Debug("destination: %d"CR, getDestination(frame));	
 	Log.Debug("fileName:    %s"CR, getFileName(frame));
 	
-	Log.Debug("buffer:      %s"CR, getBuffer(frame));
-	Log.Debug("---"CR);
+	if ( getBuffer(frame) != 0 ){
+		Log.Debug("buffer:      %s"CR, getBuffer(frame));
+	}
 }
 /*
 \brief Getters and Setters

@@ -61,7 +61,7 @@ with a modification to support %f
 //   NEO_GRB     Pixels are wired for GRB bitstream (most NeoPixel products)
 //   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
 
-#define WS2812_PIN 22
+#define WS2812_PIN 10
 
 Adafruit_NeoPixel_Votsh strip = Adafruit_NeoPixel_Votsh(16, WS2812_PIN, NEO_GRB + NEO_KHZ800);
 
@@ -142,7 +142,7 @@ void loop(){
       GridRenderProvider();
       DeviceRenderProvider();
    }  
-  delay(10);
+  delay(60);
 }
 
 //   Sparkles lights, good for the start of a show

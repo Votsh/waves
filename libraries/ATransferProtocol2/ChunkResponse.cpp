@@ -93,7 +93,7 @@ void ChunkResponse::print( ATP_ChunkResponse_t * frame ){
 	Log.Debug("frameType:     %d"CR, getFrameType(frame));	
 	Log.Debug("meshAddress:   %d"CR, getMeshAddress(frame));	
 	Log.Debug("datetime:      %d"CR, getDatetime(frame));	
-	Log.Debug("atpCount:      %d"CR, getAtpID(frame)); 	
+	Log.Debug("atpID:         %d"CR, getAtpID(frame)); 	
 	Log.Debug("version:       %d"CR, getVersion(frame));
 	Log.Debug("status:  	  %d"CR, getStatus(frame));
 	

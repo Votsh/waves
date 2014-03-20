@@ -68,7 +68,7 @@ class ATP
     void initiateTransferRequest(void);
     void serviceRequests(void);
     void sendRequests(void);
-	ATP_linkNode * addNode();
+	ATP_linkNode * addNode( unsigned long );
 	ATP_linkNode * findNode( unsigned long );
   private:
 };

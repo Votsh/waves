@@ -41,7 +41,7 @@ along with ATP.  If not, see <http://www.gnu.org/licenses/>.
 /*- Variables --------------------------------------------------------------*/
 
 // For XBee mesh and point-to-point radio network
-SoftwareSerial XBeeOnBreadboard(11, 9); // RX, TX
+SoftwareSerial XBeeOnBreadboard(10, 11); // RX, TX
 int status = 0;		// 1 = normal, 2 = exception
 //char recbuf[16] = "123456789012345";	// Receive buffer
 
@@ -63,6 +63,8 @@ void RadioDriver::setRadioType( char * driverType ){
 		Log.Debug("driverType: XBEE"CR);
 		status = 1;		
 	    XBeeOnBreadboard.begin(9600);
+	    pinMode(11, OUTPUT);
+
 	}
 	else if( ! strcmp( driverType, "LWM") )
 	{
