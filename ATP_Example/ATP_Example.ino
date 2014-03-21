@@ -70,7 +70,7 @@ void loop() {
 
   atp.serviceRequests();
 
-  //atp.sendRequests();
+  atp.sendRequests();
 
   if ( millis() > trcounter )
   {

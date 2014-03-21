@@ -131,7 +131,9 @@ void ATP::serviceRequests(void)
 
 				ATP_linkNode * lnknode = addNode( sizeof( ATP_TransferRequest_t ) );
 				if ( lnknode == 0 ) { return; }
-				tro.setDefaults( (ATP_TransferRequest_t *) lnknode->transfer, 0 );
+				
+				ATP_TransferRequest_t * frame = (ATP_TransferRequest_t *) lnknode->transfer;
+				tro.setDefaults( frame, 0 );
 				
 				int i = 4;
 				char * head = (char *)(lnknode->transfer);
@@ -156,9 +158,12 @@ void ATP::serviceRequests(void)
 				if ( i != sizeof( ATP_TransferRequest_t ) )
 				{
 					Log.Error("TR Timeout %d of %d"CR, i, sizeof( ATP_TransferRequest_t ) );
+					tro.setStatus( frame, ATP_FAILED_DURING_TRANSIT );
 					timeout = 0;
 					return;	
 				}
+				
+				tro.setStatus( frame, ATP_RECEIVED );
 				
 				// Calculate the chunk size
 				// and put the correct number of chunks onto the linked list
@@ -177,6 +182,9 @@ void ATP::serviceRequests(void)
 					if ( lnknode_cr == 0 ) { return; }
 					creqo.setDefaults( (ATP_ChunkRequest_t *) lnknode_cr->transfer, ( (ATP_TransferRequest_t *) lnknode->transfer ) -> atpID );
 				}
+				
+				print();
+				
 				//todo Back out of the ChunkRequests if a malloc fails
 
 			}
@@ -187,6 +195,9 @@ void ATP::serviceRequests(void)
 								
 				ATP_linkNode * lnknode = addNode( sizeof( ATP_ChunkRequest_t ) );
 				if ( lnknode == 0 ) { return; }
+
+				ATP_ChunkRequest_t * frame = (ATP_ChunkRequest_t *) lnknode->transfer;
+				creqo.setDefaults( frame, 0 );
 				
 				//todo: For LWM the frame comes in at once, no getting the rest
 				
@@ -203,27 +214,28 @@ void ATP::serviceRequests(void)
 				{
 					if ( rd.isAvailable() )
 					{
-						if (i > sizeof( ATP_ChunkRequest_t ) - 4 ) { break; }
+						if (i > sizeof( ATP_ChunkRequest_t ) ) { break; }
 						*head++ = rd.getReceivedInt();
 						i++;
 					}
 				}
 				
-				if ( i != sizeof( ATP_TransferRequest_t ) )
+				if ( i != sizeof( ATP_ChunkRequest_t ) )
 				{
 					Log.Error("CRQ Timeout %d of %d"CR, i, sizeof( ATP_ChunkRequest_t ) );
+					creqo.setStatus( frame, ATP_FAILED_DURING_TRANSIT );
 					timeout = 0;
 					return;	
 				}
+
+				creqo.setStatus( frame, ATP_RECEIVED );
 				
 				// Create a new ChunkResponse
 				
-				ATP_ChunkResponse_t * ncr = crespo.getNewRequest( ( (ATP_TransferRequest_t *) 
-				(lnknode->transfer) ) -> atpID );
+				Log.Debug("New CR"CR);
 				ATP_linkNode * lnknodeResponse = addNode( sizeof(ATP_ChunkResponse_t) );
 				if ( lnknodeResponse == 0 ) { return; }
-				lnknodeResponse->transfer = ncr;
-				Log.Debug("Added new ChunkResponse"CR);
+				crespo.setDefaults( (ATP_ChunkResponse_t *) lnknodeResponse->transfer, ( (ATP_ChunkRequest_t *) lnknode->transfer ) -> atpID );
 
 				// populate the header
 				
@@ -232,22 +244,9 @@ void ATP::serviceRequests(void)
 				
 				( (ATP_ChunkResponse_t *) (lnknode->transfer) ) -> length = 
 				( (ATP_ChunkRequest_t *) (lnknode->transfer) ) -> length;
-
-				// Find the TransferRequest and buffer or FileName
 				
-				ATP_linkNode * theTR = findNode( ( (ATP_TransferRequest_t *) (lnknode->transfer)) -> atpID );
-				if ( theTR == 0 ) { return; }
-				if ( ( (ATP_TransferRequest_t *) (lnknode->transfer) ) -> fileName[0] == 0 )
-				{
-					// We are transfering from an in-memory buffer
-					rd.SendChunkResponseBuffer( ncr, ( (ATP_TransferRequest_t *) theTR -> transfer ) -> buffer );				
-				}
-				else
-				{
-					// We are transfering from a file on the SD card
-					rd.SendChunkResponseFile( ncr, ( (ATP_TransferRequest_t *) theTR -> transfer ) -> fileName );				
-				}
-								
+				print();
+						
 				//todo Support various TransferTypes, right now its just plain/text
 				
 			}
@@ -258,6 +257,9 @@ void ATP::serviceRequests(void)
 								
 				ATP_linkNode * lnknode = addNode( sizeof( ATP_ChunkResponse_t ) );
 				if ( lnknode == 0 ) { return; }
+
+				ATP_ChunkResponse_t * frame = (ATP_ChunkResponse_t *) lnknode->transfer;
+				crespo.setDefaults( frame, 0 );
 				
 				//todo: For LWM the frame comes in at once, no getting the rest
 				
@@ -274,7 +276,7 @@ void ATP::serviceRequests(void)
 				{
 					if ( rd.isAvailable() )
 					{
-						if (i > sizeof( ATP_ChunkResponse_t ) - 4 ) { break; }
+						if (i > sizeof( ATP_ChunkResponse_t ) ) { break; }
 						*head++ = rd.getReceivedInt();
 						i++;
 					}
@@ -283,10 +285,13 @@ void ATP::serviceRequests(void)
 				if ( i != sizeof( ATP_TransferRequest_t ) )
 				{
 					Log.Error("CRQ Timeout %d of %d"CR, i, sizeof( ATP_ChunkRequest_t ) );
+					crespo.setStatus( frame, ATP_FAILED_DURING_TRANSIT );
 					timeout = 0;
 					return;	
 				}
 				
+				crespo.setStatus( frame, ATP_RECEIVED );
+
 				/*
 				
 				// Find the TransferRequest and buffer or FileName
@@ -351,6 +356,8 @@ void ATP::serviceRequests(void)
 				}
 				//todo if the checksum fails, retry
 				*/
+				
+				print();
 			}
 			else
 			{
@@ -370,24 +377,24 @@ void ATP::sendRequests(void){
 	if ( rootnode != 0 )
 	{
 		conductor = rootnode;
-		while ( conductor->next != 0)
-        {
-            conductor = conductor->next;
-             
-			if ( ( (ATP_TransferRequest_t *) (conductor->transfer) ) -> frameType == 
-			ATP_TRANSFER_REQUEST && ( (ATP_TransferRequest_t *) (conductor->transfer) ) -> status == ATP_IDLE )
+		while ( conductor != 0 )
+        {             
+			if ( ( (ATP_TransferRequest_t *) (conductor->transfer) ) -> frameType == ATP_TRANSFER_REQUEST 
+			&& ( (ATP_TransferRequest_t *) (conductor->transfer) ) -> status == ATP_UNSENT )
 			{
 				rd.SendTransferRequest( (ATP_TransferRequest_t * ) conductor -> transfer );
+				Log.Debug(CR"Send TR %d"CR, ( (ATP_TransferRequest_t * ) conductor -> transfer ) -> atpID );
 			}
             
-			if ( ( (ATP_TransferRequest_t *) (conductor->transfer) ) -> frameType == 
-			ATP_CHUNK_REQUEST && ( (ATP_TransferRequest_t *) (conductor->transfer) ) -> status == ATP_IDLE )
+			if ( ( (ATP_TransferRequest_t *) (conductor->transfer) ) -> frameType == ATP_CHUNK_REQUEST 
+			&& ( (ATP_TransferRequest_t *) (conductor->transfer) ) -> status == ATP_UNSENT )
 			{
 				rd.SendChunkRequest( (ATP_ChunkRequest_t *) conductor -> transfer );
+				Log.Debug(CR"Send CR %d"CR, ( (ATP_ChunkRequest_t * ) conductor -> transfer ) -> atpID );
 			}
 			          
-			if ( ( (ATP_TransferRequest_t *) (conductor->transfer) ) -> frameType == 
-			ATP_CHUNK_RESPONSE && ( (ATP_TransferRequest_t *) (conductor->transfer) ) -> status == ATP_IDLE )
+			if ( ( (ATP_TransferRequest_t *) (conductor->transfer) ) -> frameType == ATP_CHUNK_RESPONSE 
+			&& ( (ATP_TransferRequest_t *) (conductor->transfer) ) -> status == ATP_UNSENT )
 			{
 				ATP_linkNode * theTR = findNode( ( (ATP_TransferRequest_t *) conductor->transfer ) -> atpID );
 				if ( theTR == 0 ) { return; }
@@ -396,16 +403,22 @@ void ATP::sendRequests(void){
 					// We are transfering from an in-memory buffer
 					rd.SendChunkResponseBuffer( (ATP_ChunkResponse_t *) conductor->transfer, 
 					((ATP_TransferRequest_t *) theTR->transfer ) -> buffer );				
+					Log.Debug(CR"Send CR (Buffer) %d"CR, ( (ATP_ChunkRequest_t * ) conductor -> transfer ) -> atpID );
 				}
 				else
 				{
 					// We are transfering from a file on the SD card
 					rd.SendChunkResponseFile( (ATP_ChunkResponse_t *) conductor->transfer, 
 					((ATP_TransferRequest_t *) theTR->transfer ) -> fileName );				
+					Log.Debug(CR"Send CR (File) %d"CR, ( (ATP_ChunkRequest_t * ) conductor -> transfer ) -> atpID );
 				}
 			}
+			
+	        conductor = conductor->next;
         }
+
 	}
+
 }
 
 /*
@@ -422,7 +435,6 @@ void ATP::print(void){
 		Log.Info(CR"ATP::print %d"CR, i++);
 		
 		ATP_TransferRequest_t * transobj = (ATP_TransferRequest_t *) conductor->transfer;
-		Log.Debug("print: frametype=%i ATP_TRANSFER_REQUEST=%i"CR, transobj->frameType  ,ATP_TRANSFER_REQUEST);
 		
 		if ( transobj->frameType == ATP_TRANSFER_REQUEST )
 		{
@@ -496,17 +508,20 @@ void ATP::garbageCollection(void){
 
 void ATP::initiateTransferRequest(void)
 {
-	Log.Info("initiateTransferRequest"CR);
+	Log.Info("New TR"CR);
 
 	ATP_linkNode * lnknode = addNode( sizeof(ATP_TransferRequest_t) );
 	if ( lnknode == 0 ) { return; }
+	ATP_TransferRequest_t * frame = (ATP_TransferRequest_t *) lnknode->transfer;
+	tro.setDefaults( frame, transID++ );
 
-	ATP_TransferRequest_t * rq = tro.getNewRequest( transID++ );
-	tro.setExpires( rq, 60000 );	// expires in 60 seconds
-	tro.setSize( rq, 16 );
-	tro.setFileName( rq, "bravo.txt" );
-	tro.setBuffer( rq, (unsigned int *) "Bond James Bond" );
+	tro.setExpires( frame, 60000 );	// expires in 60 seconds
+	tro.setSize( frame, 16 );
+	tro.setFileName( frame, "" );
+	tro.setBuffer( frame, (unsigned int *) "Bond James Bond" );
 	
+	print();
+		
 	// If you are sending a buffer over the radio, use this:
 	
 	/*
@@ -521,15 +536,8 @@ void ATP::initiateTransferRequest(void)
 		
 	// Otherwise, just set the FileName and go
 	// rq.setFileName("myfilename.txt");
-	tro.print( rq );
 
-	lnknode->transfer = rq;
-	lnknode->next = 0;
-
-	rd.SendTransferRequest( rq );
-	timeout=0;
-
-	Log.Debug("ATP: TRQ sent"CR);	
+	timeout = 0;
 }
 
 /*

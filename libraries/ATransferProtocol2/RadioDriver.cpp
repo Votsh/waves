@@ -113,6 +113,7 @@ void RadioDriver::SendTransferRequest( ATP_TransferRequest_t * frame )
     }
     frame->status = ATP_SUCCESS;
     //XBeeOnBreadboard.println( "We are done." );
+    //todo handle exceptions
 }
 
 /*
@@ -131,6 +132,7 @@ void RadioDriver::SendChunkRequest( ATP_ChunkRequest_t * frame )
     }
     frame->status = ATP_SUCCESS;
     //XBeeOnBreadboard.println( "We are done." );
+    //todo handle exceptions
 }
 
 /*

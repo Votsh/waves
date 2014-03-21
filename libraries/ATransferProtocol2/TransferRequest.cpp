@@ -81,7 +81,7 @@ void TransferRequest::setDefaults( ATP_TransferRequest_t * header, int id ){
 	setDatetime( header, (unsigned long) millis() );
 	setAtpID( header, id );
 	setVersion( header, 1 );
-	setStatus( header, ATP_IDLE );
+	setStatus( header, ATP_UNSENT );
 	// Do not change the above members of the struct. The app.cpp dispatcher requires these.
 	
 	setSize( header, 0 );
@@ -97,26 +97,34 @@ void TransferRequest::setDefaults( ATP_TransferRequest_t * header, int id ){
 */
 void TransferRequest::print( ATP_TransferRequest_t * frame ){
 	Log.Debug("TransferRequest object:"CR);
-	Log.Debug("frameID:     %s"CR, getFrameID(frame));
-	Log.Debug("frameType:   %d"CR, getFrameType(frame));	
-	Log.Debug("meshAddress: %d"CR, getMeshAddress(frame));	
-	Log.Debug("datetime:    %l"CR, getDatetime(frame));	
-	Log.Debug("atpID:       %d"CR, getAtpID(frame)); 	
-	Log.Debug("version:     %d"CR, getVersion(frame));
 
-	if ( getStatus(frame) == ATP_IDLE ) Log.Debug("status:      ATP_IDLE"CR );
-	if ( getStatus(frame) == ATP_SUCCESS ) Log.Debug("status:      ATP_SUCCESS"CR );
-	if ( getStatus(frame) == ATP_FAILED_DURING_TRANSIT ) Log.Debug("status:      ATP_FAILED_DURING_TRANSIT"CR );
-	if ( getStatus(frame) == ATP_FAILED_CHECKSUM ) Log.Debug("status:      ATP_FAILED_CHECKSUM"CR );
-	if ( getStatus(frame) == ATP_FAILED_ENCRYPTION ) Log.Debug("status:      ATP_FAILED_ENCRYPTION"CR );
-	if ( getStatus(frame) == ATP_FAILED_COMPRESSION ) Log.Debug("status:      ATP_FAILED_COMPRESSION"CR );
+	if ( getFrameType(frame) == ATP_TRANSFER_REQUEST ) Log.Debug("type:        ATP_TRANSFER_REQUEST"CR );
+	if ( getFrameType(frame) == ATP_CHUNK_REQUEST ) Log.Debug(   "type:        ATP_CHUNK_REQUEST"CR );
+	if ( getFrameType(frame) == ATP_CHUNK_RESPONSE ) Log.Debug("type:        ATP_CHUNK_RESPONSE"CR );
+
+	Log.Debug("frameID:       %s"CR, getFrameID(frame));
+	Log.Debug("frameType:     %d"CR, getFrameType(frame));	
+	Log.Debug("meshAddress:   %d"CR, getMeshAddress(frame));	
+	Log.Debug("datetime:      %l"CR, getDatetime(frame));	
+	Log.Debug("atpID:         %d"CR, getAtpID(frame)); 	
+	Log.Debug("version:       %d"CR, getVersion(frame));
+
+	if ( getStatus(frame) == ATP_IDLE ) Log.Debug(                 "status:        ATP_IDLE"CR );
+	if ( getStatus(frame) == ATP_SUCCESS ) Log.Debug(              "status:        ATP_SUCCESS"CR );
+	if ( getStatus(frame) == ATP_FAILED_DURING_TRANSIT ) Log.Debug("status:        ATP_FAILED_DURING_TRANSIT"CR );
+	if ( getStatus(frame) == ATP_FAILED_CHECKSUM ) Log.Debug(   "status:        ATP_FAILED_CHECKSUM"CR );
+	if ( getStatus(frame) == ATP_FAILED_ENCRYPTION ) Log.Debug( "status:        ATP_FAILED_ENCRYPTION"CR );
+	if ( getStatus(frame) == ATP_FAILED_COMPRESSION ) Log.Debug("status:        ATP_FAILED_COMPRESSION"CR );
+	if ( getStatus(frame) == ATP_UNSENT ) Log.Debug(            "status:        ATP_UNSENT"CR );
+	if ( getStatus(frame) == ATP_SENT ) Log.Debug(              "status:        ATP_SENT"CR );
+	if ( getStatus(frame) == ATP_RECEIVED ) Log.Debug(          "status:        ATP_RECEIVED"CR );
 	
-	Log.Debug("size:        %d"CR, getSize(frame));
-	Log.Debug("expires:     %d"CR, getExpires(frame));	
-	Log.Debug("descriptor:  %s"CR, getDescriptor(frame));	
-	Log.Debug("source:      %d"CR, getSource(frame));	
-	Log.Debug("destination: %d"CR, getDestination(frame));	
-	Log.Debug("fileName:    %s"CR, getFileName(frame));
+	Log.Debug("size:          %d"CR, getSize(frame));
+	Log.Debug("expires:       %d"CR, getExpires(frame));	
+	Log.Debug("descriptor:    %s"CR, getDescriptor(frame));	
+	Log.Debug("source:        %d"CR, getSource(frame));	
+	Log.Debug("destination:   %d"CR, getDestination(frame));	
+	Log.Debug("fileName:      %s"CR, getFileName(frame));
 	
 	if ( getBuffer(frame) != 0 ){
 		Log.Debug("buffer:      %s"CR, getBuffer(frame));
@@ -148,8 +156,8 @@ void TransferRequest::setAtpID( ATP_TransferRequest_t * frame, unsigned long myv
 unsigned int TransferRequest::getVersion( ATP_TransferRequest_t * frame ){ return frame->version; }
 void TransferRequest::setVersion( ATP_TransferRequest_t * frame, unsigned int myval){ frame->version = myval; }
 
-unsigned int TransferRequest::getStatus( ATP_TransferRequest_t * frame ){ return frame->status; }
-void TransferRequest::setStatus( ATP_TransferRequest_t * frame, unsigned int myval){ frame->status = myval; }
+unsigned long TransferRequest::getStatus( ATP_TransferRequest_t * frame ){ return frame->status; }
+void TransferRequest::setStatus( ATP_TransferRequest_t * frame, unsigned long myval){ frame->status = myval; }
 
 unsigned long TransferRequest::getSize( ATP_TransferRequest_t * frame ){ return frame->size; }
 void TransferRequest::setSize( ATP_TransferRequest_t * frame, unsigned long myval){ frame->size = myval; }

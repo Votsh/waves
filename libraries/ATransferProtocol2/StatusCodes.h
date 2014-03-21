@@ -46,32 +46,35 @@ ATP_SUCCESS - Operation successfulATP_ERROR_STATUS - Unknown errorATP_OUT_OF_M
 
 typedef enum
 {
-  ATP_IDLE								  = 0x00,
-  ATP_SUCCESS                             = 0x01,
-  ATP_FAILED_DURING_TRANSIT               = 0x02,
-  ATP_FAILED_CHECKSUM                     = 0x03,
-  ATP_FAILED_ENCRYPTION                   = 0x04,
-  ATP_FAILED_COMPRESSION                  = 0x05
+  ATP_IDLE,
+  ATP_SUCCESS,
+  ATP_FAILED_DURING_TRANSIT,
+  ATP_FAILED_CHECKSUM,
+  ATP_FAILED_ENCRYPTION,
+  ATP_FAILED_COMPRESSION,
+  ATP_UNSENT,
+  ATP_SENT,
+  ATP_RECEIVED
 } ATP_Status_t;
 
 typedef enum
 {
-  ATP_NONE_1                              = 0x00,
-  ATP_RTE                                 = 0x01,
-  ATP_Lempel                              = 0x02	
+  ATP_NONE_1,
+  ATP_RTE,
+  ATP_Lempel
 } ATP_Compression_Technique;
 
 typedef enum
 {
-  ATP_NONE_2                              = 0x00,
-  ATP_ENGINE1                             = 0x01,
-  ATP_ENGINE2                             = 0x02
+  ATP_NONE_2,
+  ATP_ENGINE1,
+  ATP_ENGINE2
 } ATP_Encryptiong_Technique;
 
 typedef enum
 {
-  ATP_NONE_3                              = 0x00,
-  ATP_CHECKSUM                            = 0x01	
+  ATP_NONE_3,
+  ATP_CHECKSUM
 } ATP_Verify_Technique;
 
 /*- Types ------------------------------------------------------------------*/

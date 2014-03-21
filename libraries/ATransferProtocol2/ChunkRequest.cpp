@@ -74,7 +74,7 @@ void ChunkRequest::setDefaults( ATP_ChunkRequest_t * header, int id){
 	setDatetime( header, millis() );	//todo: Replace this with the Time library or when you get a Real Time Clock
 	setAtpID( header, id );
 	setVersion( header, 1 );
-	setStatus( header, ATP_IDLE );
+	setStatus( header, ATP_UNSENT );
 	
 	setStart( header, 0);
 	setLength( header, 0);
@@ -85,17 +85,30 @@ void ChunkRequest::setDefaults( ATP_ChunkRequest_t * header, int id){
 */
 void ChunkRequest::print( ATP_ChunkRequest_t * frame ){
 	Log.Debug("ChunkRequest object:"CR);
+
+	if ( getFrameType(frame) == ATP_TRANSFER_REQUEST ) Log.Debug("type:          ATP_TRANSFER_REQUEST"CR );
+	if ( getFrameType(frame) == ATP_CHUNK_REQUEST ) Log.Debug(   "type:          ATP_CHUNK_REQUEST"CR );
+	if ( getFrameType(frame) == ATP_CHUNK_RESPONSE ) Log.Debug(  "type:          ATP_CHUNK_RESPONSE"CR );
+
 	Log.Debug("frameID:       %s"CR, getFrameID(frame));
-	Log.Debug("frameType:     %d"CR, getFrameType(frame));	
 	Log.Debug("meshAddress:   %d"CR, getMeshAddress(frame));	
 	Log.Debug("datetime:      %d"CR, getDatetime(frame));	
 	Log.Debug("atpID:         %d"CR, getAtpID(frame)); 	
 	Log.Debug("version:       %d"CR, getVersion(frame));
-	Log.Debug("status:  	  %d"CR, getStatus(frame));
+		      
+	if ( getStatus(frame) == ATP_IDLE ) Log.Debug(                 "status:        ATP_IDLE"CR );
+	if ( getStatus(frame) == ATP_SUCCESS ) Log.Debug(              "status:        ATP_SUCCESS"CR );
+	if ( getStatus(frame) == ATP_FAILED_DURING_TRANSIT ) Log.Debug("status:        ATP_FAILED_DURING_TRANSIT"CR );
+	if ( getStatus(frame) == ATP_FAILED_CHECKSUM ) Log.Debug(   "status:        ATP_FAILED_CHECKSUM"CR );
+	if ( getStatus(frame) == ATP_FAILED_ENCRYPTION ) Log.Debug( "status:        ATP_FAILED_ENCRYPTION"CR );
+	if ( getStatus(frame) == ATP_FAILED_COMPRESSION ) Log.Debug("status:        ATP_FAILED_COMPRESSION"CR );
+	if ( getStatus(frame) == ATP_UNSENT ) Log.Debug(            "status:        ATP_UNSENT"CR );
+	if ( getStatus(frame) == ATP_SENT ) Log.Debug(              "status:        ATP_SENT"CR );
+	if ( getStatus(frame) == ATP_RECEIVED ) Log.Debug(          "status:        ATP_RECEIVED"CR );
 	
-	Log.Debug("start:         %d"CR, getStart(frame));	
-	Log.Debug("length:        %s"CR, getLength(frame));	
-	Log.Debug("transferTypes: %d"CR, getTransferTypes(frame));	
+	Log.Debug("start:         %l"CR, getStart(frame));	
+	Log.Debug("length:        %l"CR, getLength(frame));	
+	Log.Debug("transferTypes: %s"CR, getTransferTypes(frame));	
 }
 /*
 \brief Getters and Setters

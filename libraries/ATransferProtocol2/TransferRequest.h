@@ -105,8 +105,8 @@ class TransferRequest
 	unsigned int getVersion( ATP_TransferRequest_t *);
 	void setVersion( ATP_TransferRequest_t *, unsigned int);
 
-	unsigned int getStatus( ATP_TransferRequest_t *);
-	void setStatus( ATP_TransferRequest_t *, unsigned int);
+	unsigned long getStatus( ATP_TransferRequest_t *);
+	void setStatus( ATP_TransferRequest_t *, unsigned long);
 
 	unsigned long getSize( ATP_TransferRequest_t * );
 	void setSize( ATP_TransferRequest_t *, unsigned long);
