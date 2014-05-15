@@ -41,7 +41,7 @@ along with ATP.  If not, see <http://www.gnu.org/licenses/>.
 /*- Variables --------------------------------------------------------------*/
 
 // For XBee mesh and point-to-point radio network
-SoftwareSerial XBeeOnBreadboard(10, 11); // RX, TX
+SoftwareSerial XBeeOnBreadboard(12, 13); // RX, TX
 int status = 0;		// 1 = normal, 2 = exception
 //char recbuf[16] = "123456789012345";	// Receive buffer
 
@@ -111,7 +111,7 @@ void RadioDriver::SendTransferRequest( ATP_TransferRequest_t * frame )
         XBeeOnBreadboard.write( *byte );
     	delay(100);
     }
-    frame->status = ATP_SUCCESS;
+    frame->status = ATP_WORKING;
     //XBeeOnBreadboard.println( "We are done." );
     //todo handle exceptions
 }

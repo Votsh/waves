@@ -73,7 +73,12 @@ static const uint8_t dreqinttable[] = {
 
 boolean Adafruit_VS1053_FilePlayer::useInterrupt(uint8_t type) {
   myself = this;  // oy vey
-    
+
+	// fcohen@votsh.com April 30, 2014: Changed to support Pinoccio Scout interrupts, 0 = pin D4 on the Scout
+	attachInterrupt(0, feeder, CHANGE);
+	return true;
+
+/*    
   if (type == VS1053_FILEPLAYER_TIMER0_INT) {
 #if defined(__AVR__)
     OCR0A = 0xAF;
@@ -96,6 +101,7 @@ boolean Adafruit_VS1053_FilePlayer::useInterrupt(uint8_t type) {
     }
   }
   return false;
+  */
 }
 
 Adafruit_VS1053_FilePlayer::Adafruit_VS1053_FilePlayer(

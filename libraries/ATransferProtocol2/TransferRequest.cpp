@@ -84,6 +84,8 @@ void TransferRequest::setDefaults( ATP_TransferRequest_t * header, int id ){
 	setStatus( header, ATP_UNSENT );
 	// Do not change the above members of the struct. The app.cpp dispatcher requires these.
 	
+	setTopChunk( header, 0 );
+	setChunkCount( header, 0 );
 	setSize( header, 0 );
 	setExpires( header, 0 );
 	setDescriptor( header, "CC");	
@@ -104,10 +106,12 @@ void TransferRequest::print( ATP_TransferRequest_t * frame ){
 
 	Log.Debug("frameID:       %s"CR, getFrameID(frame));
 	Log.Debug("frameType:     %d"CR, getFrameType(frame));	
-	Log.Debug("meshAddress:   %d"CR, getMeshAddress(frame));	
+	Log.Debug("meshAddress:   %l"CR, getMeshAddress(frame));	
 	Log.Debug("datetime:      %l"CR, getDatetime(frame));	
-	Log.Debug("atpID:         %d"CR, getAtpID(frame)); 	
+	Log.Debug("atpID:         %l"CR, getAtpID(frame)); 	
 	Log.Debug("version:       %d"CR, getVersion(frame));
+	Log.Debug("topchunk:      %d"CR, getTopChunk(frame));
+	Log.Debug("chunkcount:    %d"CR, getChunkCount(frame));
 
 	if ( getStatus(frame) == ATP_IDLE ) Log.Debug(                 "status:        ATP_IDLE"CR );
 	if ( getStatus(frame) == ATP_SUCCESS ) Log.Debug(              "status:        ATP_SUCCESS"CR );
@@ -118,18 +122,30 @@ void TransferRequest::print( ATP_TransferRequest_t * frame ){
 	if ( getStatus(frame) == ATP_UNSENT ) Log.Debug(            "status:        ATP_UNSENT"CR );
 	if ( getStatus(frame) == ATP_SENT ) Log.Debug(              "status:        ATP_SENT"CR );
 	if ( getStatus(frame) == ATP_RECEIVED ) Log.Debug(          "status:        ATP_RECEIVED"CR );
+	if ( getStatus(frame) == ATP_WORKING ) Log.Debug(          "status:        ATP_WORKING"CR );
 	
-	Log.Debug("size:          %d"CR, getSize(frame));
-	Log.Debug("expires:       %d"CR, getExpires(frame));	
+	Log.Debug("size:          %l"CR, getSize(frame));
+	Log.Debug("expires:       %l"CR, getExpires(frame));	
 	Log.Debug("descriptor:    %s"CR, getDescriptor(frame));	
-	Log.Debug("source:        %d"CR, getSource(frame));	
-	Log.Debug("destination:   %d"CR, getDestination(frame));	
+	Log.Debug("source:        %l"CR, getSource(frame));	
+	Log.Debug("destination:   %l"CR, getDestination(frame));	
 	Log.Debug("fileName:      %s"CR, getFileName(frame));
 	
 	if ( getBuffer(frame) != 0 ){
 		Log.Debug("buffer:      %s"CR, getBuffer(frame));
 	}
 }
+
+void TransferRequest::setSizeFromFile( ATP_TransferRequest_t * frame )
+{
+	File thefile = SD.open( getFileName(frame) );
+	setSize( frame, thefile.size() );
+	//Log.Debug("file %s size = %l", getFileName(frame), thefile.size() );
+	//Frank.ogg is 2,426,531
+	thefile.close();	
+	
+}
+
 /*
 \brief Getters and Setters
 */
@@ -144,8 +160,8 @@ void TransferRequest::setFrameID( ATP_TransferRequest_t * frame, char * id)
 unsigned int TransferRequest::getFrameType( ATP_TransferRequest_t * frame ){ return frame->frameType; }
 void TransferRequest::setFrameType( ATP_TransferRequest_t * frame, unsigned int mytype){ frame->frameType = mytype; }
 
-unsigned int TransferRequest::getMeshAddress( ATP_TransferRequest_t * frame ){ return frame->meshAddress; }
-void TransferRequest::setMeshAddress( ATP_TransferRequest_t * frame, unsigned int mymesh){ frame->meshAddress = mymesh; }
+unsigned long TransferRequest::getMeshAddress( ATP_TransferRequest_t * frame ){ return frame->meshAddress; }
+void TransferRequest::setMeshAddress( ATP_TransferRequest_t * frame, unsigned long mymesh){ frame->meshAddress = mymesh; }
 
 unsigned long TransferRequest::getDatetime( ATP_TransferRequest_t * frame ){ return frame->datetime; }
 void TransferRequest::setDatetime( ATP_TransferRequest_t * frame, unsigned long mytime){ frame->datetime = mytime; }
@@ -156,8 +172,8 @@ void TransferRequest::setAtpID( ATP_TransferRequest_t * frame, unsigned long myv
 unsigned int TransferRequest::getVersion( ATP_TransferRequest_t * frame ){ return frame->version; }
 void TransferRequest::setVersion( ATP_TransferRequest_t * frame, unsigned int myval){ frame->version = myval; }
 
-unsigned long TransferRequest::getStatus( ATP_TransferRequest_t * frame ){ return frame->status; }
-void TransferRequest::setStatus( ATP_TransferRequest_t * frame, unsigned long myval){ frame->status = myval; }
+unsigned int TransferRequest::getStatus( ATP_TransferRequest_t * frame ){ return frame->status; }
+void TransferRequest::setStatus( ATP_TransferRequest_t * frame, unsigned int myval){ frame->status = myval; }
 
 unsigned long TransferRequest::getSize( ATP_TransferRequest_t * frame ){ return frame->size; }
 void TransferRequest::setSize( ATP_TransferRequest_t * frame, unsigned long myval){ frame->size = myval; }
@@ -180,7 +196,11 @@ void TransferRequest::setBuffer( ATP_TransferRequest_t * frame, unsigned int * t
 char * TransferRequest::getFileName( ATP_TransferRequest_t * frame ){ return frame->fileName; }
 void TransferRequest::setFileName( ATP_TransferRequest_t * frame, char * id){ strcpy( frame->fileName, id ); }
 
+unsigned int TransferRequest::getTopChunk( ATP_TransferRequest_t * frame){ return frame->topchunk; }
+void TransferRequest::setTopChunk( ATP_TransferRequest_t * frame, unsigned int myint){ frame->topchunk = myint; }
 
+unsigned int TransferRequest::getChunkCount( ATP_TransferRequest_t * frame){ return frame->chunkcount; }
+void TransferRequest::setChunkCount( ATP_TransferRequest_t * frame, unsigned int myint){ frame->chunkcount = myint; }
 
 /*todoTransferRequest::delete() - removes object and related dataTransferRequest::isTransferComplete() - returns true if all data transffered, false if still transferring dataTransferRequest::getTransferStatus() - returns first node of a linked-list of a entries showing which portions of the transfer are complete, meaningful only to the receiving peerTransferRequest::getTransferSize() - returns a 16 bit value defining the number of 8-bit unsigned integer values in the transfer
 

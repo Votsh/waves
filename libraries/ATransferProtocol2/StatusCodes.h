@@ -54,7 +54,8 @@ typedef enum
   ATP_FAILED_COMPRESSION,
   ATP_UNSENT,
   ATP_SENT,
-  ATP_RECEIVED
+  ATP_RECEIVED,
+  ATP_WORKING
 } ATP_Status_t;
 
 typedef enum

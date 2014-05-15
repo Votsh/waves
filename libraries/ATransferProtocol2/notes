@@ -1,0 +1,24 @@
+     Lead         				 Wave
+
+     TR      				->   RecTR, add TR to list
+     TR->chunkcount				 topchun = 0
+     							 chunkcount set
+
+     CRQs    				<-   For each TR 
+     	 						 while chunkcount > 0 and topchunk<4
+     							 	CRQ
+     							 	topchunk++
+     							 	todo: if retrycount++ > maxretry, tr= failed on retry
+     
+	 CRs 4                 	->   if tr = failed, then skip cr
+	 							 CR->Store in card
+	 							 topchunk--
+	 							 chunkccount--
+	 							   retry count
+	 							     if retry > maxretry tr = failed on retry
+
+	garbage collector
+	 TR Status->			->   Returns TR
+	   if chunkcount = 0		   
+	   remove TR
+	   

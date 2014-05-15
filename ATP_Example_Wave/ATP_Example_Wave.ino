@@ -63,9 +63,7 @@ void setup() {
   Serial.begin(baudrate);
    // while the serial stream is not open, do nothing:
    while (!Serial) ;
-   
-   Serial.println("LEAD WAVE");
-   
+   Serial.println("WAVE");
 }
 
 void loop() {
@@ -81,7 +79,7 @@ void loop() {
     setupMusic();
 
     delay(3000);
-    atp.initiateTransferRequest();
+    //atp.initiateTransferRequest();
 
   }
 

@@ -63,11 +63,16 @@ SoftwareSerial XBeeOnBreadboard(11, 9); // RX, TX
 //#define CLK 13       // SPI Clock, shared with SD card
 //#define MISO 12      // Input data, from VS1053/SD card
 //#define MOSI 11      // Output data, to VS1053/SD card
-#define RESET 13      // VS1053 reset pin (output)
+//#define RESET 13      // VS1053 reset pin (output)
+//#define CS 10        // VS1053 chip select pin (output)
+//#define DCS 8        // VS1053 Data/command select pin (output)
+//#define DREQ 2       // VS1053 Data request pin (into Arduino)
+//#define CARDCS 6     // Card chip select pin
+#define RESET 9      // VS1053 reset pin (output)
 #define CS 10        // VS1053 chip select pin (output)
 #define DCS 8        // VS1053 Data/command select pin (output)
-#define DREQ 2       // VS1053 Data request pin (into Arduino)
-#define CARDCS 6     // Card chip select pin
+#define DREQ 3       // VS1053 Data request pin (into Arduino) 
+#define CARDCS 4     // Card chip select pin
 
 Adafruit_VS1053_FilePlayer musicPlayer = Adafruit_VS1053_FilePlayer(RESET, CS, DCS, DREQ, CARDCS);
 
@@ -106,6 +111,7 @@ void loop() {
   if (firsttime==1){
     firsttime=0;
     mySetup();
+    setupMusic();    
   }
   
   //Serial.print("looping ");
@@ -145,11 +151,6 @@ void mySetup(){
     Log.Debug(CR"Started WS2812 lights"CR);
     /*
     setupMusic();
-
-    Log.Info("Playing music file"CR);
-    if (! musicPlayer.startPlayingFile("FRANK.OGG")) {
-      Log.Error("Could not open file"CR);
-    }
     
     XBeeOnBreadboard.begin(9600);
     XBeeOnBreadboard.println("Hello, world?");
@@ -160,6 +161,7 @@ void mySetup(){
     Log.Info("Initialize the music player"CR);
     if (!musicPlayer.begin()) {
       Serial.println("VS1053 not found");
+      return;
     }
 
     Log.Debug("Make a tone to indicate VS1053 is working"CR);
@@ -179,5 +181,11 @@ void mySetup(){
 
     if (! musicPlayer.useInterrupt( VS1053_FILEPLAYER_PIN_INT ))  //DREQ int, VS1053_FILEPLAYER_PIN_INT
       Log.Error("DREQ pin is not an interrupt pin"CR);
+      
+    Log.Info("Playing music file"CR);
+    if (! musicPlayer.startPlayingFile("FRANK.OGG")) {
+      Log.Error("Could not open file"CR);
+    }
+      
   }
 

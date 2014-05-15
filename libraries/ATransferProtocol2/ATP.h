@@ -47,8 +47,7 @@ along with ATP.  If not, see <http://www.gnu.org/licenses/>.
 
 #define LOGLEVEL LOG_LEVEL_DEBUG
 #define baudrate 9600
-#define SD_CARD_CS 6    // Card chip select pin
-#define CHUNKSIZE 100	// Default chunk size
+#define CHUNKSIZE 2000	// Default chunk size
 #define TIMEOUTVAL 30	// 30 seconds, presuming the main sketch loop repeats ever 1000 milliseconds
 
 // Linked List definition
