@@ -37,22 +37,32 @@
 
 #define LOGLEVEL LOG_LEVEL_DEBUG
 
-#define destination 2      // Remote Scout running the LWM_Echo sketch
+#define addr 1      // Remote Scout running the LWM_Echo sketch
 
 byte counter = 0;          // Counts how many messages sent and received
 long time = 0;
 int messageNumber = 0;
 char outmsg[250];
+int sending = 0;
 
 void setup() {
-  Scout.setup();
+  //Scout.setup();
+
+  /*
+  Scouts set the mesh network settings. If running this outside of a Scout use:*/
+  SYS_Init();
+  NWK_SetAddr(addr);
+  NWK_SetPanId(0x01);
+  PHY_SetChannel(0x1a);
+  PHY_SetRxState(true);
+  NWK_OpenEndpoint(addr, receiveMessage);
 
   Serial.begin(115200);
   Log.Init(LOGLEVEL, 115200);
   Log.Info(CR"Pinoccio Light Weight Mesh (LWM) Simple Messaging Example"CR);
   Log.Info("by Frank Cohen of Votsh.com"CR);
 
-  Log.Info("Scout temperature is %d"CR, Pinoccio.getTemperature());
+  //Log.Info("Scout temperature is %d"CR, Pinoccio.getTemperature());
 
   /* Typical reports look like this:
    Scout: print mesh.report();
@@ -61,47 +71,42 @@ void setup() {
    {"type":"mesh","scoutid":1,"troopid":11,"routes":0,"channel":20,"rate":"250 kb/s","power":"3.5 dBm"}
   */
 
-  Log.Debug("Scout Address %i"CR, Scout.getAddress());
-  Log.Debug("Scout PanID %i"CR, Scout.getPanId());
-
-  /*
-  Scouts set the mesh network settings. If running this outside of a Scout use:
-  SYS_Init();
-  NWK_SetAddr(meshAddress);
-  NWK_SetPanId(0x01);
-  PHY_SetChannel(0x1a);
-  PHY_SetRxState(true);
-  NWK_OpenEndpoint(1, receiveMessage);
-  */
+  //Log.Debug("Scout Address %i"CR, Scout.getAddress());
+  //Log.Debug("Scout PanID %i"CR, Scout.getPanId());
 
   // Sets a mesh listener (similar to Scout.meshListen) to receive LWM messages
-  NWK_OpenEndpoint(Scout.getAddress(), receiveMessage);
+  //NWK_OpenEndpoint(Scout.getAddress(), receiveMessage);
 
   time = millis();
 }
 
 void loop() {
-  Scout.loop();      // If outside of a Scount use: SYS_TaskHandler();
-
+  //Scout.loop();      // If outside of a Scount use: SYS_TaskHandler();
+  SYS_TaskHandler();
+  
   // If we are the first Scout, then send a message every 10 seconds
-  if ( (Scout.getAddress() == 1 ) && ( ( time + 10000 ) < millis() ) )
+  //if ( (Scout.getAddress() == 1 ) && ( ( time + 10000 ) < millis() ) )
+  if ( ( addr == 1 ) && ( ( time + 10000 ) < millis() ) )
   {
     time = millis();
 
-    Log.Debug("Hello from %i number %i"CR, Scout.getAddress(), messageNumber  );
-
-    messageNumber++;
-
-    strcpy( outmsg, "Hello " );
-    
-    char rv[100];
-    sprintf(rv,"%d", messageNumber);
-    strcat( outmsg, rv );
-    strcat( outmsg, "\0" );
-    
-    Log.Debug("msg: %s, strlen=%d"CR, outmsg, strlen(outmsg) );
-
-    int status = sendMsg( outmsg, destination);
+    if ( !sending )
+    {
+      Log.Debug("Hello from %i number %i"CR, addr, messageNumber  );
+  
+      messageNumber++;
+  
+      strcpy( outmsg, "Hello " );
+      
+      char rv[100];
+      sprintf(rv,"%d", messageNumber);
+      strcat( outmsg, rv );
+      strcat( outmsg, "\0" );
+      
+      Log.Debug("msg: %s, strlen=%d"CR, outmsg, strlen(outmsg) );
+  
+      sendMsg( outmsg, 2);
+    }
   }
 
   delay(500);
@@ -113,6 +118,8 @@ Send a message across the LWM to another Scout running this Echo sketch
 
 static void sendMsg( const char * data, int destination_mesh_id ) {
 
+  sending = 1;
+  
   Log.Debug("sendMsg to %i, length = %d, sending: %s"CR, destination_mesh_id, strlen(data) + 1, data );
 
   // we just leak for now
@@ -121,13 +128,11 @@ static void sendMsg( const char * data, int destination_mesh_id ) {
   message->dstAddr = destination_mesh_id;
   message->dstEndpoint = 1;
   message->srcEndpoint = 1;
-  message->options = 0;   // Example: NWK_OPT_ACK_REQUEST|NWK_OPT_ENABLE_SECURITY
+  message->options = NWK_OPT_ACK_REQUEST;   // Example: NWK_OPT_ACK_REQUEST|NWK_OPT_ENABLE_SECURITY
   message->data = (uint8_t *) data;
   message->size = strlen( data ) + 1 ;
   message->confirm = sendConfirm;
   NWK_DataReq(message);
-  
-  return 0;
 }
 
 /*
@@ -150,13 +155,27 @@ static bool receiveMessage(NWK_DataInd_t *ind) {
 
 // only needed if you want to do something once you receive the Ack packet back from the receiver
 static void sendConfirm( NWK_DataReq_t *req ) {
+  sending = 0;
+  
   if (NWK_SUCCESS_STATUS == req->status)
   {
     Log.Debug("Sent successfully."CR);
   }
   else
   {
-    Log.Debug("sendConfirm error: %d"CR, req->status);
+    Log.Debug("sendConfirm error: %s, %d"CR, printStatus( req->status ), req->status );
   }
+}
+
+char * printStatus( int status )
+{
+  if ( status == NWK_SUCCESS_STATUS ) return "NWK_SUCCESS_STATUS";
+  if ( status == NWK_ERROR_STATUS ) return "NWK_ERROR_STATUS";
+  if ( status == NWK_OUT_OF_MEMORY_STATUS ) return "NWK_OUT_OF_MEMORY_STATUS";
+  if ( status == NWK_NO_ACK_STATUS ) return "NWK_NO_ACK_STATUS";
+  if ( status == NWK_NO_ROUTE_STATUS ) return "NWK_NO_ROUTE_STATUS";
+  if ( status == NWK_PHY_CHANNEL_ACCESS_FAILURE_STATUS ) return "NWK_PHY_CHANNEL_ACCESS_FAILURE_STATUS";
+  if ( status == NWK_PHY_NO_ACK_STATUS ) return "NWK_PHY_NO_ACK_STATUS";
+  return "Unknown Error";
 }
 
