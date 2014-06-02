@@ -1,0 +1,439 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<style>
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote {
+    margin: 0;
+    padding: 0;
+}
+body {
+    font-family: "Helvetica Neue", Helvetica, "Hiragino Sans GB", Arial, sans-serif;
+    font-size: 13px;
+    line-height: 18px;
+    color: #737373;
+    background-color: white;
+    margin: 10px 13px 10px 13px;
+}
+table {
+	margin: 10px 0 15px 0;
+	border-collapse: collapse;
+}
+td,th {	
+	border: 1px solid #ddd;
+	padding: 3px 10px;
+}
+th {
+	padding: 5px 10px;	
+}
+
+a {
+    color: #0069d6;
+}
+a:hover {
+    color: #0050a3;
+    text-decoration: none;
+}
+a img {
+    border: none;
+}
+p {
+    margin-bottom: 9px;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    color: #404040;
+    line-height: 36px;
+}
+h1 {
+    margin-bottom: 18px;
+    font-size: 30px;
+}
+h2 {
+    font-size: 24px;
+}
+h3 {
+    font-size: 18px;
+}
+h4 {
+    font-size: 16px;
+}
+h5 {
+    font-size: 14px;
+}
+h6 {
+    font-size: 13px;
+}
+hr {
+    margin: 0 0 19px;
+    border: 0;
+    border-bottom: 1px solid #ccc;
+}
+blockquote {
+    padding: 13px 13px 21px 15px;
+    margin-bottom: 18px;
+    font-family:georgia,serif;
+    font-style: italic;
+}
+blockquote:before {
+    content:"\201C";
+    font-size:40px;
+    margin-left:-10px;
+    font-family:georgia,serif;
+    color:#eee;
+}
+blockquote p {
+    font-size: 14px;
+    font-weight: 300;
+    line-height: 18px;
+    margin-bottom: 0;
+    font-style: italic;
+}
+code, pre {
+    font-family: Monaco, Andale Mono, Courier New, monospace;
+}
+code {
+    background-color: #fee9cc;
+    color: rgba(0, 0, 0, 0.75);
+    padding: 1px 3px;
+    font-size: 12px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+}
+pre {
+    display: block;
+    padding: 14px;
+    margin: 0 0 18px;
+    line-height: 16px;
+    font-size: 11px;
+    border: 1px solid #d9d9d9;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+pre code {
+    background-color: #fff;
+    color:#737373;
+    font-size: 11px;
+    padding: 0;
+}
+sup {
+    font-size: 0.83em;
+    vertical-align: super;
+    line-height: 0;
+}
+* {
+	-webkit-print-color-adjust: exact;
+}
+@media screen and (min-width: 914px) {
+    body {
+        width: 854px;
+        margin:10px auto;
+    }
+}
+@media print {
+	body,code,pre code,h1,h2,h3,h4,h5,h6 {
+		color: black;
+	}
+	table, pre {
+		page-break-inside: avoid;
+	}
+}
+</style>
+<title>ScoutSyslogLogger</title>
+
+</head>
+<body>
+<h1>ScoutSyslogLogger</h1>
+
+<h2>A Web-based Log4j-style Logger for Arduino Pinoccio Scout Apps</h2>
+
+<p>v .1, June 2, 2014, <a href="https://github.com/Votsh/waves">https://github.com/Votsh/waves</a></p>
+
+<h3>Background</h3>
+
+<p>ScoutSyslogLogger comes from <a href="http://votsh.com">Votsh</a>. Votsh is a start-up company making entertaining machines to bring meaning to people's lives. The Votsh <a href="http://votsh.com">Waves</a> project is perhaps a modern lava lamp, and maybe light therapy with a speaker. It uses Arduino Pinoccio technology in a distributed entertainment system running light, sound, and movement shows that span multiple networked boxes. While the Arduino IDE Serial Monitor is a fine tool to get started, in a distributed environment developers require sophisticated software development tools, including advanced and remote logging services.</p>
+
+<h3>Logging</h3>
+
+<p>ScoutSyslogLogger is for software developers working on <a href="" title="http://www.pinnoc.io">Arduino Pinoccio</a> projects. Log to a central log manager and view the log from a Web page. ScoutSyslogLogger works from any Arduino sketch, C and C++ library. It runs in the background of your app and does not interfere with Pinoccio's operations. ScoutSyslogLogger functions with hq.pinocc.io and Bitlash functions. You can even continue using the Arduino IDE Serial Monitor.
+<code>
+Log.Info( "Hull breech detected on deck %d", 4 );
+</code></p>
+
+<p>It does not matter which Scout you are logging from, ScoutSyslog delivers the log message to the Syslog server for display in a Web page.</p>
+
+<p><img style="width: 944px; height: 56px;" alt=""
+src="https://votsh.files.wordpress.com/2014/06/logcloseup.jpg"></p>
+
+<p>The Web page includes tail -f to show the most recent log entries. The page  provides a filter system to search the log entries for values. The page is configureable to include Syslog streams from multiple nodes.</p>
+
+<p><img style="width: 793px; height: 502px;" alt="Web page viewer for logs"
+src="https://votsh.files.wordpress.com/2014/06/scoutsyslogger_example.jpg"></p>
+
+<p>The system makes log entries to the server Syslog messages file. The Web page shows the most recent log entries - in a tail -f style.</p>
+
+<h2>Configuration</h2>
+
+<p>ScoutSyslogLogger is compatible with Pinoccio Scout sketches and libraries. Write your sketch in Arduino IDE or your favorite editor. Ince the following libraries.</p>
+
+<pre><code>#include &lt;Arduino.h&gt;    // Arduino main libraries
+#include &lt;SPI.h&gt;        // Serial Device Interface 
+#include &lt;Wire.h&gt;       // TWI/I2C library for Wiring &amp; Arduino
+#include &lt;Scout.h&gt;      // Pinoccio Scout APIs, including setup and loop, mostly hardware related
+#include &lt;GS.h&gt;         // HAL driver to talk with Gainspan GS1011 WiFi module
+#include &lt;bitlash.h&gt;    // Tiny language interpreter that provides a serial port 
+                        // shell environment for bit banging and hardware hacking.
+#include &lt;lwm.h&gt;        // Atmel Light Weight Mesh radio network
+#include &lt;js0n.h&gt;       // Javascript Object Notation JSON library 
+#include "key/key.h"    // Key utilities
+
+#include "ScoutSyslogLogger.h"    // Web-based log4j-style logger
+</code></pre>
+
+<p>Then change your setup to include:</p>
+
+<pre><code>  // See ScoutSyslogLogger.h for definitions
+  // ip address of syslog server
+  // port of syslog server, normally 514
+  // driver LOG_WIFI, LOG_BLE or others
+  // consoleOption If LOG_CONSOLE then logs to the Serial monitor too
+  // facility syslog identifier
+  // machine Scout name
+  // procid Process number, default is 0
+  // appname App name
+
+  Log.setup( 
+    LOG_LEVEL_DEBUG,
+    baudrate,
+    54,209,5,236,
+    514,
+    LOG_WIFI,
+    LOG_SERIAL,
+    user,
+    "wave2",
+    0,
+    "ScoutSyslogLoggerExample" ); 
+</code></pre>
+
+<p>Change the loop to include:</p>
+
+<pre><code>void loop() {
+  Scout.loop();          // Pinoccio Scout libraries process their tasks
+  Log.handleMessages();  // ScoutSyslogLogger handles log messages
+</code></pre>
+
+<p>In your code, add</p>
+
+<pre><code>  Log.Info( "Hull breech detected on deck %d", 4 );      
+</code></pre>
+
+<h3>Arduino IDE Configuration</h3>
+
+<ol>
+<li>Copy libraries/ScoutSyslogLogger/* to your Arduino libraries directory. On a Mac this is ~/Documents/Arduino/libraries</li>
+<li>Open ScoutSyslogLoggerExample.ino in Arduino IDE.</li>
+<li>Compile</li>
+</ol>
+
+
+<h3>Ports and Firewall Configuration</h3>
+
+<p>Syslog on Linux runs on port 514 by default.</p>
+
+<p>Logit runs on port 27288 by default.</p>
+
+<p>The following IPTables rules provide access to these ports:</p>
+
+<p>On Redhat (RHEL) version 6 use:</p>
+
+<pre><code>/etc/sysconfig/iptables
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 28778 -j ACCEPT
+-A INPUT -p udp -m udp --dport 514 -j ACCEPT
+-A INPUT -p tcp -m tcp --dport 514 -j ACCEPT
+</code></pre>
+
+<p>Then restart iptables using <code>/etc/init.d/iptables restart</code></p>
+
+<h3>syslogd with UDP reception enabled</h3>
+
+<p>On a Redhat (RHEL) environment, at the top of the file “/etc/rsyslog.conf”, at the top of the file, change the below lines</p>
+
+<pre><code># Provides UDP syslog reception
+#$ModLoad imudp
+#$UDPServerRun 514
+
+# Provides TCP syslog reception
+#$ModLoad imtcp
+#$InputTCPServerRun 514
+</code></pre>
+
+<p>to this</p>
+
+<pre><code># Provides UDP syslog reception
+$ModLoad imudp
+$UDPServerRun 514
+
+# Provides TCP syslog reception
+$ModLoad imtcp
+$InputTCPServerRun 514
+</code></pre>
+
+<p>Once you have saved your changes, restart the rsyslog service</p>
+
+<pre><code>[root@syslog ~]# service rsyslog restart
+Shutting down system logger: [ OK ]
+Starting system logger: [ OK ]
+[root@syslog ~]#
+</code></pre>
+
+<h2>Log4J Logging Styles</h2>
+
+<p><a href="http://logging.apache.org/log4j/2.x/">Apache log4j</a> is a popular Java-based logging utility. Java developers like it because they insert logging commands within their source code. The commands indicate the severity of the issue being logged. A global property determines what level of severity appears in the log.</p>
+
+<pre><code>void myFunction( int theval ){
+
+    if ( theval &lt; 100 ){
+        Log.Error( "Houston, we have a %s", "problem" ); 
+        return;
+    }
+
+    if ( theval = 500 ){
+      Log.Info( "Hull breech detected on deck %d", 4 );
+      processTheValue( theval );      
+    }
+
+    Log.Debug( "Finished running myFunction" );      
+}
+</code></pre>
+
+<p>Setting the logger to log at a Info level gives:</p>
+
+<pre><code>Info: Hull breech detected on deck 4
+</code></pre>
+
+<p>Setting the logger to log at the Debug level gives both the Info and Debug log entries:</p>
+
+<pre><code>Info: Hull breech detected on deck 4
+Debug: Finished running myFunction
+</code></pre>
+
+<h3>Printf Style</h3>
+
+<p>ScoutSyslogLogger supports <a href="http://www.cplusplus.com/reference/cstdio/printf/">printf</a> style logging.</p>
+
+<pre><code>Log.Info("Display my integers myInt1 %d, myInt2 %d", myInt1, myInt2);
+
+Log.Info("Display as hex myInt1=%x, myInt1=%X", myInt1, myInt1);
+
+Log.Info("Display as hex myInt2=%x, myInt2=%X", myInt2, myInt2);
+
+Log.Info("Display as binary myInt1=%b, myInt1=%B", myInt1, myInt1);
+
+Log.Info("Display as binary myInt2=%b, myInt2=%B", myInt2, myInt2);
+
+Log.Info("Display my longs myLong1 %l, myLong2=%l", myLong1, myLong2);
+
+Log.Info("Display my bool myBool1=%t, myBool2=%T", myBool1, myBool2);
+
+Log.Info("Output: %s", myString);
+
+Log.Error("is this an real error? %T", myBool2);
+
+Log.Debug("%d, %d, %l, %l, %t, %T", myInt1, myInt2,
+              myLong1, myLong2,
+              myBool1, myBool2);
+
+Log.Info("have fun with this Log");
+</code></pre>
+
+<p>ScoutSyslogLogger supports logging cariage return and line feed characters. By default ScoutSyslogLogger logs to Unix Syslog which does not record CR and LF characters. The format looks like this:</p>
+
+<pre><code>Log.Info("Have fun with this Log"CR);
+
+Log.Info(CR"Have fun with this Log"CR);
+
+Log.Info(CR"Have fun with this Log");
+</code></pre>
+
+<h2>LogIt Web Viewer for Syslog</h2>
+
+<p>ScoutSyslogLogger uses <a href="http://logio.org">LogIo</a> to provide a Web view of the Syslog file:</p>
+
+<ul>
+<li>Shows a tail -f style view of log messages</li>
+<li>Filter the view to only the log messages you want to see</li>
+<li>Display multiple views</li>
+<li>Filter to different servers and log streams</li>
+</ul>
+
+
+<p>LogIo is a Node.js based Web front end app. With Node.js already installed, use these LogIo installation instructions.</p>
+
+<ol>
+<li><p>Install via npm
+npm install -g log.io</p></li>
+<li><p>Launch server
+log.io-server</p></li>
+<li><p>Configure log harvester
+vi ~/.log.io/harvester.conf</p></li>
+<li><p>Start log harvester
+log.io-harvester</p></li>
+<li><p>Browse to http://localhost:28778</p></li>
+</ol>
+
+
+<p>An example harvester file from a Redhat (RHEL) 6 environment looks like this:</p>
+
+<pre><code>exports.config = {
+  nodeName: "application_server",
+  logStreams: {
+    messages: [
+      "/var/log/messages","/var/log/cron"
+    ]
+  },
+  server: {
+    host: '0.0.0.0',
+    port: 28777
+  }
+}
+</code></pre>
+
+<h2>How It Works</h2>
+
+<p>ScoutSyslogLogger automatically uses the Atmel ATmega256RFR2 or similarly equipped processors with LightWeight Mesh (LWM) capability to deliver messages to the central logger.</p>
+
+<p><img style="width: 707px; height: 194px;"
+src="https://votsh.files.wordpress.com/2014/06/howitworks.jpg"></p>
+
+<p>Messages come from an app running in the Lead Scout or Scouts. ScoutSyslogLogger delivers log messages originating in a Scout to the Lead Scout over the LWM radio network. ScoutSyslogLogger running in the Lead Scout sends the log message to the Syslog service on a server over Wifi (using UDP protocol)or Bluetooth (BLE) networking (using a BLE gateway app).</p>
+
+<p>At a code leve, ScoutSyslogLogger uses the following object architecture.</p>
+
+<p><img style="width: 810px; height: 373px;"
+alt="Software object architecture diagram"
+src="https://votsh.files.wordpress.com/2014/06/scoutweblogger.jpg"><br></p>
+
+<h2>How To Contribute</h2>
+
+<p>ScoutSyslogLogger was originally written by Frank Cohen of Votsh. Frank's opinion of C and C++: "Come on C and C++, I remember back to the 1980's when you were written. You were an expression of teenage angst. Your times is past." The code is waiting for you to improve it past the original febile attempt.</p>
+
+<p>Code Repository is at <a href="https://github.com/Votsh/waves">https://github.com/Votsh/waves</a></p>
+
+<p>Make changes to the code and issue a push. Or send your changes to <a href="fcohen@votsh.com">fcohen@votsh.com</a></p>
+
+<p>ScoutSyslogLogger is distributed under a GPL v3 Open Source Software license.</p>
+</body>
+</html>
