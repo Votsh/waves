@@ -138,15 +138,15 @@ void Logging::print(int msgtype, const char *format, va_list args ) {
 				continue;
 			}
             if( *format == 'x' ) {
-				//Serial.print(va_arg( args, int ),HEX);
-                m+= String( va_arg( args, int ),HEX );
+				int val = va_arg( args, int );           	
+     			if ( val < 16 ) { Serial.print("0"); }
+				Serial.print( val, HEX);
 				continue;
 			}
             if( *format == 'X' ) {
-				//Serial.print("0x");
-				//Serial.print(va_arg( args, int ),HEX);
-				m+= String("0x");
-                m+= String( va_arg( args, int ),HEX );
+				int val = va_arg( args, int );           	
+     			if ( val < 16 ) { Serial.print("0x0"); } else { Serial.print("0x"); }
+				Serial.print( val,HEX);
 				continue;
 			}
             if( *format == 'b' ) {
