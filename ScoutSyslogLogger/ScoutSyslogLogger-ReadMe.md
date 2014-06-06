@@ -8,8 +8,19 @@ v .1, June 2, 2014, [https://github.com/Votsh/waves](https://github.com/Votsh/wa
 
 ScoutSyslogLogger comes from [Votsh](http://votsh.com). Votsh is a start-up company making entertaining machines to bring meaning to people's lives. The Votsh [Waves](http://votsh.com) project is perhaps a modern lava lamp, and maybe light therapy with a speaker. It uses Arduino Pinoccio technology in a distributed entertainment system running light, sound, and movement shows that span multiple networked boxes. While the Arduino IDE Serial Monitor is a fine tool to get started, in a distributed environment developers require sophisticated software development tools, including advanced and remote logging services.
 
+One thing that bugs me every build is having to open the serial monitors on the target boards. The serial port is used to upload a program/sketch to the board. I find myself having to close the monitors after each compile/upload operation, and then re-open the monitor. Takes time and concentration.
+
+ScoutSyslogLogger is a syslogd based logger utility. The advantages of this design are:
+
+1) It scales to support dozens to hundreds of Scout devices
+
+2) Simple Web-based view of log entries, no more opening the Arduino IDE Serial Monitor
+
+3) Compatible with other logging utilities, including [LogEntries](http://logentries.com)
+
 ###Logging
 ScoutSyslogLogger is for software developers working on [Arduino Pinoccio]("http://www.pinnoc.io") projects. Log to a central log manager and view the log from a Web page. ScoutSyslogLogger works from any Arduino sketch, C and C++ library. It runs in the background of your app and does not interfere with Pinoccio's operations. ScoutSyslogLogger functions with hq.pinocc.io and Bitlash functions. You can even continue using the Arduino IDE Serial Monitor.
+
 ```
 Log.Info( "Hull breech detected on deck %d", 4 );
 ```
