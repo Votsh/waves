@@ -36,6 +36,7 @@ Send a message across the LWM to another Scout running this Echo sketch
 // only needed if you want to do something once you receive the Ack packet back from the receiver
 void sendConfirm( NWK_DataReq_t *req ) {
   sending = 0;
+  
   if (NWK_SUCCESS_STATUS == req->status)
   {
     //recentMsg = String("Sent successfully.");
@@ -50,6 +51,8 @@ void sendConfirm( NWK_DataReq_t *req ) {
 	*/
 	recentStatus = 1;
   }
+  
+  LWMGC( req );
 }
 
 /*
@@ -63,8 +66,7 @@ void sendLWMMsg( const char * data, int destination_mesh_id ) {
   //Serial.println("sendMsg");
   //Log.Debug("sendMsg to %i, length = %d, sending: %s"CR, destination_mesh_id, strlen(data) + 1, data );
 
-  // we just leak for now
-  message = (NWK_DataReq_t*) malloc( sizeof( NWK_DataReq_t ) );
+  NWK_DataReq_t * message = (NWK_DataReq_t*) malloc( sizeof( NWK_DataReq_t ) );
 
   message->dstAddr = destination_mesh_id;
   message->dstEndpoint = 1;
@@ -73,7 +75,7 @@ void sendLWMMsg( const char * data, int destination_mesh_id ) {
   message->data = (uint8_t *) data;     // (uint8_t *) data.toCharArray();
   message->size = strlen( data ) + 1 ;  // data.length() + 1 ;
   message->confirm = sendConfirm;
-  NWK_DataReq(message);
+  NWK_DataReq(message);  
 }
 
 /*
@@ -113,8 +115,12 @@ char * LWMGetMessage(){
 	Free the message memory
 */
 
-void LWMGC(){
-	free(message);
+void LWMGC( NWK_DataReq_t* msg ){
+	sending = 0;
+	if ( msg != 0 ) 
+	{
+		free(msg);
+	}
 }
 
 char * printStatus( int status )
@@ -131,6 +137,7 @@ char * printStatus( int status )
 
 void LWMDriverInit(){
   NWK_OpenEndpoint(1, receiveMessage);
+  sending = 0;
 }
 
 

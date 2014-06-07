@@ -32,8 +32,6 @@ along with ATP.  If not, see <http://www.gnu.org/licenses/>.
 extern "C"{
 #endif
 
-NWK_DataReq_t *message;
-
 void sendConfirm( NWK_DataReq_t *req );
 
 void sendLWMMsg( const char * data, int destination_mesh_id );

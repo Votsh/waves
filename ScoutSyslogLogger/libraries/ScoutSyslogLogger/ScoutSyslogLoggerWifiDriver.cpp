@@ -107,7 +107,7 @@ void ScoutSyslogLoggerWifiDriver::handleLWM()
 		    	Serial.println("Not connected. Could not send message.");	
 		    }
 	
-			LWMGC();		// Free the LWM message
+			// LWMGC();		// Free the LWM message
 		}	
 	}
 }
