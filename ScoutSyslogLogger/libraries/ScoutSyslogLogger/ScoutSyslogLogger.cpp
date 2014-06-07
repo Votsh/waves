@@ -77,7 +77,7 @@ void Logging::Error(char* msg, ...){
     if (LOG_LEVEL_ERRORS <= _level) {   
         va_list args;
         va_start(args, msg);
-        print(LOG_LEVEL_ERRORS, msg,args);
+        print( err, msg,args);
     }
 }
 
@@ -86,7 +86,7 @@ void Logging::Info(char* msg, ...){
     if (LOG_LEVEL_INFOS <= _level) {
         va_list args;
         va_start(args, msg);
-        print(LOG_LEVEL_INFO, msg,args);
+        print( info, msg,args);
     }
 }
 
@@ -94,7 +94,7 @@ void Logging::Debug(char* msg, ...){
     if (LOG_LEVEL_DEBUG <= _level) {
         va_list args;
         va_start(args, msg);
-        print(LOG_LEVEL_DEBUG, msg,args);
+        print( debug, msg,args);
     }
 }
 
@@ -103,7 +103,7 @@ void Logging::Verbose(char* msg, ...){
     if (LOG_LEVEL_VERBOSE <= _level) {
         va_list args;
         va_start(args, msg);
-        print(LOG_LEVEL_VERBOSE, msg,args);
+        print( ludicrous, msg,args);
     }
 }
 
