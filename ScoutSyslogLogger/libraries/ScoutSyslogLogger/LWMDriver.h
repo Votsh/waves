@@ -32,9 +32,20 @@ along with ATP.  If not, see <http://www.gnu.org/licenses/>.
 extern "C"{
 #endif
 
+typedef struct node {
+  char * data;
+  struct node * next;
+} node_t;
+
+struct node *root;
+struct node *conductor;      
+struct node *prevnode;      
+
+int cnt;
+
 void sendConfirm( NWK_DataReq_t *req );
 
-void sendLWMMsg( const char * data, int destination_mesh_id );
+void sendLWMMsg( char * data, int destination_mesh_id );
 
 bool receiveMessage(NWK_DataInd_t *ind);
 
@@ -42,11 +53,9 @@ char * printStatus( int status );
 
 void LWMDriverInit();
 
-bool LWMMessageWaiting();
-
-char * LWMGetMessage();
-
-void LWMGC();
+node_t * LWMGetRoot();
+void LWMSetRoot(node_t *);
+int LWMCount();
 
 #ifdef __cplusplus
 } // extern "C"

@@ -90,25 +90,76 @@ void ScoutSyslogLoggerWifiDriver::setup( int ip0, int ip1, int ip2, int ip3,
 }
 
 void ScoutSyslogLoggerWifiDriver::handleLWM()
-{
+{	
 	if ( isLeadScout  )
-	{
-		if ( LWMMessageWaiting() )
-		{	
-		    if ( connected )
-		    {
-		      String mm = LWMGetMessage();
-		      Serial.println("LWM message sent to syslog server: " + mm );
-		      client.print( mm );
-		      client.flush();
-		    }
-		    else
-		    {
-		    	Serial.println("Not connected. Could not send message.");	
-		    }
-	
-			// LWMGC();		// Free the LWM message
-		}	
+	{		
+	    if ( ! connected )
+		{
+			Serial.println("Not connected. Could not send message.");
+			return;	
+		}
+		
+		// Pull the msg from the last node, then delete the node
+
+		if ( LWMGetRoot() == 0 ) return;
+		
+		node_t * conductor = LWMGetRoot();
+		node_t * prevnode = 0;
+		
+		while ( conductor->next != 0 )
+		{
+			prevnode = conductor;
+			conductor = conductor->next;
+		}
+
+		if ( prevnode != 0 )
+		{
+			// Send the message
+		    client.print( conductor->data );
+		    client.flush();
+		    
+		    delay(2000);
+		    
+		    Serial.println(" ");
+		    Serial.print("Sending ");
+		    Serial.print( LWMCount() );
+		    Serial.print(": ");
+		    Serial.println( conductor->data );
+		    Serial.println(" ");		    
+
+			// Delete the node from the list
+			prevnode->next = 0;
+			
+			// Free the data
+			free( conductor->data );
+		
+			// Free the node
+			free( conductor );
+		}
+		else
+		{
+			// Send the message
+		    client.print( conductor->data );
+		    client.flush();
+
+		    delay(2000);
+
+		    Serial.println(" ");
+		    Serial.print("Sending ");
+		    Serial.print( LWMCount() );
+		    Serial.print(": ");
+		    Serial.println( conductor->data );
+		    Serial.println(" ");		    
+
+			// Free the data
+			free( conductor->data );
+		
+			// Free the node
+			free( conductor );
+						
+			// Remove the root
+			LWMSetRoot( 0 );
+		}
 	}
 }
 
@@ -176,15 +227,15 @@ void ScoutSyslogLoggerWifiDriver::sendMsg( String message, int msgtype )
 	          msg+= String("DEBUG ");
 		  	break;
 		  	default:
-	      		msg+= String("DEFAULT ");
+	      	  msg+= String("DEFAULT ");
 		  	break;
 		}
 		  	      
 	    msg+= String(message);
 
 		msg.toCharArray(msgbuf, 1000);
+		
 		sendLWMMsg( msgbuf, 1 );
-		Serial.println("LWM message sent");
 	}
 }
 

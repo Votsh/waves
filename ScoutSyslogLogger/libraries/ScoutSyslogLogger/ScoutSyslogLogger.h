@@ -84,7 +84,7 @@ extern "C" {
 #define notice 5
 #define info 6
 #define debug 7
-#define ludicrous 8 (Spaceballs)
+#define ludicrous 8
 
 // default loglevel if nothing is set from user
 #define LOGLEVEL LOG_LEVEL_DEBUG 

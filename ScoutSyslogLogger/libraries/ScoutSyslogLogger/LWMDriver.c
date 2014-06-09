@@ -24,103 +24,92 @@ along with ATP.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "LWMDriver.h"
 
-int messageNumber = 0;
-int sending = 0;
-char * recentMsg[1000];
-int recentStatus = 0;
-
 /*
-Send a message across the LWM to another Scout running this Echo sketch
-*/
+Received a send confirmation message on the client. 
+Only needed if you want to do something once you receive the Ack packet back from the receiver */
 
-// only needed if you want to do something once you receive the Ack packet back from the receiver
-void sendConfirm( NWK_DataReq_t *req ) {
-  sending = 0;
-  
-  if (NWK_SUCCESS_STATUS == req->status)
-  {
-    //recentMsg = String("Sent successfully.");
-    recentStatus = 0;
-  }
-  else
-  {
-	/*
-	recentMsg = String( "sendConfirm error: );
-	recentMsg += printStatus( req->status );
-	recentMsg += " " + req->status;
-	*/
-	recentStatus = 1;
-  }
-  
-  LWMGC( req );
+void sendConfirm( NWK_DataReq_t *req ) {	
+
+	// Release the memory for the message and its data
+	free( req->data );
+	free( req );
 }
 
 /*
 Send a message across the LWM to the lead Scout, who is running ScoutSyslogLogger
 */
 
-void sendLWMMsg( const char * data, int destination_mesh_id ) {
-
-  sending = 1;
-  
-  //Serial.println("sendMsg");
-  //Log.Debug("sendMsg to %i, length = %d, sending: %s"CR, destination_mesh_id, strlen(data) + 1, data );
+void sendLWMMsg( char * data, int destination_mesh_id ) {
 
   NWK_DataReq_t * message = (NWK_DataReq_t*) malloc( sizeof( NWK_DataReq_t ) );
+  if ( message == 0 ) return;
+
+  uint8_t * msgbody = (uint8_t *) malloc( strlen( data ) + 1 );
+  if ( msgbody == 0 ) return;
+
+  memcpy(msgbody, data, strlen( data ) );
 
   message->dstAddr = destination_mesh_id;
   message->dstEndpoint = 1;
   message->srcEndpoint = 1;
   message->options = NWK_OPT_ACK_REQUEST;   // Example: NWK_OPT_ACK_REQUEST|NWK_OPT_ENABLE_SECURITY
-  message->data = (uint8_t *) data;     // (uint8_t *) data.toCharArray();
-  message->size = strlen( data ) + 1 ;  // data.length() + 1 ;
+  message->data = msgbody;
+  message->size = strlen( data );
   message->confirm = sendConfirm;
   NWK_DataReq(message);  
 }
 
+
+
+int LWMCount() { return cnt; }
+
 /*
-Event handler to receive messages
+Event handler to receive messages on the LeadScout side
 */
 
 bool receiveMessage(NWK_DataInd_t *ind) {
 
-  char *recdata = (char*)ind->data;
-  
-  /*
-  Log.Debug("Received message of %d bytes: %s", ind->size, recdata );
-  Log.Debug(" from %d ", ind->srcAddr );
-  Log.Debug(" lqi %d ", ind->lqi );
-  Log.Debug(" rssi %d "CR, abs(ind->rssi) );
-  */
-	
-  NWK_SetAckControl(abs(ind->rssi));
+  	cnt++;
 
-  recentStatus = 1;
-  strcpy( recentMsg, recdata);
+  	NWK_SetAckControl(abs(ind->rssi));
+	
+  // Add node to a linked-list
+  if ( root == 0 )
+  {
+  	root = (node_t *) malloc( sizeof(node_t) );
+  	if ( root == 0 ) { return 0; }		//Out of memory
+	root->next = 0;
+	root->data = malloc( (ind->size) + 1 );
+	memcpy( root->data, ind->data, ind->size);
+  }
+  else
+  {
+    conductor = root;
+	while ( conductor->next != 0 )
+	{
+		conductor = conductor->next;
+	}
+
+	conductor->next = (node_t *) malloc( sizeof(node_t) );
+	if ( conductor->next == 0 ) return 0;	//Out of memory
+	conductor = conductor->next;
+
+	conductor->data = malloc( (ind->size) + 1 );
+	memcpy( root->data, ind->data, ind->size);
+	conductor->next = 0;
+  }
 
   return true;
 }
 
-bool LWMMessageWaiting()
+node_t * LWMGetRoot()
 {
-	return recentStatus;	
+	return root;	
 }
 
-char * LWMGetMessage(){
-	recentStatus = 0;
-	return recentMsg;
-}
-
-/*
-	Free the message memory
-*/
-
-void LWMGC( NWK_DataReq_t* msg ){
-	sending = 0;
-	if ( msg != 0 ) 
-	{
-		free(msg);
-	}
+void LWMSetRoot( node_t * node )
+{
+	root = node;
 }
 
 char * printStatus( int status )
@@ -136,8 +125,11 @@ char * printStatus( int status )
 }
 
 void LWMDriverInit(){
-  NWK_OpenEndpoint(1, receiveMessage);
-  sending = 0;
+  root = 0;
+  conductor = 0;
+  prevnode = 0;
+  cnt = 0;
+  NWK_OpenEndpoint(1, receiveMessage);  
 }
 
 
