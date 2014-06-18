@@ -66,6 +66,7 @@ Then change your setup to include:
   // machine Scout name
   // procid Process number, default is 0
   // appname App name
+  // maximum queue size
 
   Log.setup( 
     LOG_LEVEL_DEBUG,
@@ -77,7 +78,8 @@ Then change your setup to include:
     user,
     "wave2",
     0,
-    "ScoutSyslogLoggerExample" ); 
+    "ScoutSyslogLoggerExample",
+    10 ); 
 ```
 
 Change the loop to include:

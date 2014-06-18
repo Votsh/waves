@@ -50,6 +50,7 @@ class ScoutSyslogLoggerWifiDriver
     String _appname;
     String _machinename;
 	int _level;
+	int _max_queue_size;
 	
 	int connected;
 	int isLeadScout;
@@ -61,11 +62,17 @@ class ScoutSyslogLoggerWifiDriver
    ScoutSyslogLoggerWifiDriver( void );
 
 	void setup( int ip0,int ip1,int ip2,int ip3, int port, int driver,
-	 int facility, int procid, char * machinename, char * appname );
+	 int facility, int procid, char * machinename, char * appname,
+	 int max_queue_size );
 
 	void sendMsg( String message, int msgtype );
 	
-	void handleLWM();
+	void loop();
+	
+	void PrintSendList();
+	
+	void PrintReceiveList();	
+	
 };
 
 

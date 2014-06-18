@@ -13,8 +13,8 @@
 
 #define baudrate 115200
 
-byte counter = 0;          // Counts how many log messages sent
-long time = 0;
+int counter = 0;          // Counts how many log messages sent
+long time2 = millis();
 
 void setup() {
   Scout.setup();      // Initializes Pinoccio Scout libraries
@@ -28,6 +28,7 @@ void setup() {
   // machine Scout name
   // procid Process number, default is 0
   // appname App name
+  // maximum size queue of messages
 
   Log.setup( 
     LOG_LEVEL_DEBUG,
@@ -35,23 +36,43 @@ void setup() {
     54,209,5,236,
     514,
     LOG_WIFI,
-    LOG_SERIAL,
-    user,
-    "wave2",
     0,
-    "ScoutSyslogLoggerExample" );  
+    user,
+    "Wave",
+    0,
+    "ScoutSyslogLoggerExample",
+    20);    
+
+    time2 = millis();
+    Serial.println( freeRam() );
+
+    //Log.Info("ScoutSyslogLogger trial" );
+    Log.Info("Hello counter %d memory %d", counter++, freeRam() );
+    Log.Info("Hello counter %d memory %d", counter++, freeRam() );
+    Log.Info("Hello counter %d memory %d", counter++, freeRam() );
+    Log.Info("Hello counter %d memory %d", counter++, freeRam() );
 }
 
 void loop() {
-  Scout.loop();      // Pinoccio Scout libraries process their tasks
+  Scout.loop();      // Pinoccio Scout libraries process their tasks  
+  Log.loop();
   
-  Log.handleMessages();
-  
-  if ( ( time + 10000 ) < millis() )
+  if ( ( time2 + 2000 ) < millis() )
   {
-    time = millis();
+    time2 = millis();
+    Log.Info("Hello counter %d memory %d", counter++, freeRam() );
+    Log.PrintSendList();
+  }
+}
 
-    int r = rand() % 4;
+void logFreeMemory()
+{
+  Log.Info("Free memory at %d", freeRam() );      
+}
+
+void logExampleMessages()
+{
+    int r = rand() % 5;
     if ( r == 0 )
     {
       Log.Error( "Houston, we have a %s", "problem" );      
@@ -68,7 +89,12 @@ void loop() {
     {
       Log.Verbose( "I can take any truth, just do not lie to me." );
     }
-    
-  }
-
 }
+
+int freeRam() 
+{
+  extern int __heap_start, *__brkval; 
+  int v; 
+  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
+}
+

@@ -34,13 +34,15 @@ ScoutSyslogLoggerWifiDriver wifidriver;
 void Logging::setup(int level, long baud, 
 		int ip0, int ip1, int ip2, int ip3,
 		int port, int driver, int consoleOption, int facility, 
-		char * machinename, int procid, char * appname )
+		char * machinename, int procid, char * appname,
+		int max_queue_size )
 {
     _level = constrain(level,LOG_LEVEL_NOOUTPUT,LOG_LEVEL_VERBOSE);
     _consoleOption = consoleOption;
     _level = level;
     _baud = baud;
     _driver = driver;
+    _max_queue_size = max_queue_size;
 
 	if ( _consoleOption == LOG_SERIAL )
 	{
@@ -53,7 +55,7 @@ void Logging::setup(int level, long baud,
 
 		wifidriver = ScoutSyslogLoggerWifiDriver();
 		wifidriver.setup( ip0,ip1,ip2,ip3, port, driver, facility, 
-		procid, machinename, appname );
+		procid, machinename, appname, max_queue_size );
 	}
 
 	if ( _driver == LOG_BLE )
@@ -68,9 +70,14 @@ void Logging::setup(int level, long baud,
 * loop, processed message reception over LWM from the Scouts
 */
 
-void Logging::handleMessages()
+void Logging::loop()
 {
-	wifidriver.handleLWM();
+	wifidriver.loop();
+}
+
+void Logging::PrintSendList()
+{
+	wifidriver.PrintSendList();
 }
 
 void Logging::Error(char* msg, ...){
@@ -80,7 +87,6 @@ void Logging::Error(char* msg, ...){
         print( err, msg,args);
     }
 }
-
 
 void Logging::Info(char* msg, ...){
     if (LOG_LEVEL_INFOS <= _level) {
@@ -219,6 +225,6 @@ void Logging::print(int msgtype, const char *format, va_list args ) {
 	}
     
  }
- 
+
 Logging Log = Logging();
 

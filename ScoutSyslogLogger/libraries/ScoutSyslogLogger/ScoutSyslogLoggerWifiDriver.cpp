@@ -45,7 +45,8 @@ ScoutSyslogLoggerWifiDriver::ScoutSyslogLoggerWifiDriver(void){}
 
 void ScoutSyslogLoggerWifiDriver::setup( int ip0, int ip1, int ip2, int ip3,
 		int port, int driver, int facility, 
-		int procid, char * machinename, char * appname )
+		int procid, char * machinename, char * appname,
+		int max_queue_size )
 {
     _ip0 = ip0;
     _ip1 = ip1;
@@ -57,6 +58,7 @@ void ScoutSyslogLoggerWifiDriver::setup( int ip0, int ip1, int ip2, int ip3,
     _procid = procid;
     _appname = String( appname );
     _machinename = String( machinename );
+    _max_queue_size = max_queue_size;
     
     Serial.println("Machinename: " + _machinename );
     Serial.print("Facility: ");
@@ -89,8 +91,8 @@ void ScoutSyslogLoggerWifiDriver::setup( int ip0, int ip1, int ip2, int ip3,
 	}
 }
 
-void ScoutSyslogLoggerWifiDriver::handleLWM()
-{	
+void ScoutSyslogLoggerWifiDriver::loop()
+{			
 	if ( isLeadScout  )
 	{		
 	    if ( ! connected )
@@ -99,67 +101,49 @@ void ScoutSyslogLoggerWifiDriver::handleLWM()
 			return;	
 		}
 		
-		// Pull the msg from the last node, then delete the node
-
-		if ( LWMGetRoot() == 0 ) return;
+		// You are the Lead Scout and received messages from the Scouts over LWM
+		// Now send, the message to the Syslog service on the server
 		
-		node_t * conductor = LWMGetRoot();
-		node_t * prevnode = 0;
+		conductor = LWMGetRoot();
+		if ( conductor == 0 ) return;
 		
+		prevnode = 0;
 		while ( conductor->next != 0 )
 		{
 			prevnode = conductor;
 			conductor = conductor->next;
 		}
 
+		/*
+		Serial.print("===");
+		Serial.print( conductor->data );
+		Serial.println("===");
+		*/
+		
+		// Send the message
+	    client.print( conductor->data );
+	    client.flush();
+
+		// Delete the node from the list
 		if ( prevnode != 0 )
 		{
-			// Send the message
-		    client.print( conductor->data );
-		    client.flush();
-		    
-		    delay(2000);
-		    
-		    Serial.println(" ");
-		    Serial.print("Sending ");
-		    Serial.print( LWMCount() );
-		    Serial.print(": ");
-		    Serial.println( conductor->data );
-		    Serial.println(" ");		    
-
-			// Delete the node from the list
 			prevnode->next = 0;
-			
-			// Free the data
-			free( conductor->data );
-		
-			// Free the node
-			free( conductor );
 		}
 		else
 		{
-			// Send the message
-		    client.print( conductor->data );
-		    client.flush();
-
-		    delay(2000);
-
-		    Serial.println(" ");
-		    Serial.print("Sending ");
-		    Serial.print( LWMCount() );
-		    Serial.print(": ");
-		    Serial.println( conductor->data );
-		    Serial.println(" ");		    
-
-			// Free the data
-			free( conductor->data );
-		
-			// Free the node
-			free( conductor );
-						
 			// Remove the root
 			LWMSetRoot( 0 );
 		}
+		
+		// Free the data
+		if ( conductor->data != 0 ) free( conductor->data );		
+		// Free the node
+		if ( conductor != 0 ) free( conductor );
+	}
+	else
+	{
+		LWMSendMessages( millis() );   	// Send messages to the Lead over LWM
+		LWMPruneSendList( millis() );	// Prune linked lists of messages already sent or timed-out
 	}
 }
 
@@ -167,7 +151,6 @@ void ScoutSyslogLoggerWifiDriver::sendMsg( String message, int msgtype )
 {
 	if ( isLeadScout  )
 	{
-
 	    if ( connected )
 	    {
 	      String msg = String("<");
@@ -191,10 +174,10 @@ void ScoutSyslogLoggerWifiDriver::sendMsg( String message, int msgtype )
 	      		msg+= String("DEFAULT ");
 		  	break;
 		  }
-		  	      
-	      msg+= String(message);
+		  
+	      msg += message;
+
 	      client.print( msg );
-	            
 	      client.flush();
 	      
 		  Serial.println("Sent to syslog server: " + msg );
@@ -207,6 +190,13 @@ void ScoutSyslogLoggerWifiDriver::sendMsg( String message, int msgtype )
 	}
 	else
 	{
+		if ( LWMgetQueueSize() >= _max_queue_size ) 
+		{
+			Serial.print( "Queue at or above max_queue_size. Did not send message:");
+			Serial.println( message );
+			return;	
+		}
+		
 		// LWM this message to the WifiDriver on the LeadScout
 
 	    String msg = String("<");
@@ -234,12 +224,109 @@ void ScoutSyslogLoggerWifiDriver::sendMsg( String message, int msgtype )
 	    msg+= String(message);
 
 		msg.toCharArray(msgbuf, 1000);
-		
-		sendLWMMsg( msgbuf, 1 );
+				
+		int myerr = sendLWMMsg( msgbuf, 1, millis() );
+		if ( myerr != 0 )
+		{
+			Serial.print("Send failed, error ");
+			if ( myerr == NWK_OUT_OF_MEMORY_STATUS )
+			{
+				Serial.println("Out of memory");
+			}	
+			else
+			{
+				Serial.println( myerr );
+			}
+		}
+		PrintSendList(); // Debug
 	}
 }
 
+void ScoutSyslogLoggerWifiDriver::PrintSendList()
+{
+	//Serial.println("PrintSendList:");
+	Serial.print("time>");
+	Serial.print( millis() );
+	Serial.print(" rec ");
+	Serial.print( LWMRecCount() );
+	Serial.print(" send ");
+	Serial.print( LWMSendCount() );
+	Serial.print(" allocated ");
+	Serial.print( LWMSendBytesUsed() );
+	Serial.print(" freed ");
+	Serial.print( LWMSendBytesFreed() );
+	Serial.print(" size1 ");
+	Serial.print( LWMgetsize1() );
+	Serial.print(" size2 ");
+	Serial.print( LWMgetsize2() );
+	Serial.print(" size3 ");
+	Serial.println( LWMgetsize3() );
 
+	sendnode * sendconductor = LWMGetSendList();
+	while ( sendconductor != 0 ) {
 
+		//Serial.print(" stage = ");
+		Serial.print(sendconductor->stage);
+		if (sendconductor->stage == lwmInit) { Serial.print(     " lwmInit      " ); }
+		if (sendconductor->stage == lwmSent) { Serial.print(     " lwmSent      " ); }
+		if (sendconductor->stage == lwmConfirmed) { Serial.print(" lwmConfirmed " ); }
+		if (sendconductor->stage == lwmError) { Serial.print(    " lwmError     " ); }
+		
+		//Serial.print(" status = ");
+		Serial.print(sendconductor->status);
+
+		if (sendconductor->status == NWK_SUCCESS_STATUS) {       Serial.print(" NWK_SUCCESS_STATUS   " ); }
+		if (sendconductor->status == NWK_ERROR_STATUS) {         Serial.print(" NWK_ERROR_STATUS     " ); }
+		if (sendconductor->status == NWK_OUT_OF_MEMORY_STATUS) { Serial.print(" NWK_OUT_OF_MEMORY_STATUS" ); }
+		if (sendconductor->status == NWK_NO_ACK_STATUS) {        Serial.print(" NWK_NO_ACK_STATUS    " ); }
+		if (sendconductor->status == NWK_NO_ROUTE_STATUS) {      Serial.print(" NWK_NO_ROUTE_STATUS  " ); }
+		if (sendconductor->status == NWK_PHY_CHANNEL_ACCESS_FAILURE_STATUS) { Serial.print(" NWK_PHY_CHANNEL_ACCESS_FAILURE_STATUS" ); }
+		if (sendconductor->status == NWK_PHY_NO_ACK_STATUS) { Serial.print(   " NWK_PHY_NO_ACK_STATUS" ); }
+
+		//Serial.print(" time = ");
+		Serial.print(" ");
+		Serial.print( (unsigned long) sendconductor->timeorigin);		
+		Serial.print(" ");
+
+		unsigned long tlen = ((unsigned long) sendconductor->req->size ) + 1;
+		char msg[ ( (uint8_t) ( sendconductor->req ) -> size ) + 1 ];
+		memcpy( msg, sendconductor->req->data, sendconductor->req->size);
+		msg[ tlen - 1 ] = '\0';
+		Serial.println( msg );
+
+		/*
+		char * mydata = (char *) ( sendconductor->req ) -> data;
+		//Serial.print(" message = ");		
+  		char mydata2[ ( (uint8_t) ( sendconductor->req ) -> size ) + 1];
+		memset(mydata2, 0, (uint8_t) ( sendconductor->req ) -> size);
+		memcpy(mydata2, mydata, (uint8_t) ( sendconductor->req ) -> size );
+		Serial.println( mydata2 );
+		*/
+		
+	/*
+		Serial.print("  size=");
+		Serial.println( ( sendconductor->req ) -> size );
+
+		Serial.print("  dstAddr=");
+		Serial.println( ( sendconductor->req ) -> dstAddr );
+		
+		Serial.print("  dstEndpoint =");
+		Serial.println( ( sendconductor->req ) -> dstEndpoint );
+		
+		Serial.print("  srcEndpoint =");
+		Serial.println( ( sendconductor->req ) -> srcEndpoint );
+		
+		Serial.print("  options =");
+		Serial.println( ( sendconductor->req ) -> options );
+*/
+		
+		//Serial.println(" ");
+	    sendconductor = sendconductor->next;
+	}
+}
+
+void ScoutSyslogLoggerWifiDriver::PrintReceiveList ()
+{
+}
 
 

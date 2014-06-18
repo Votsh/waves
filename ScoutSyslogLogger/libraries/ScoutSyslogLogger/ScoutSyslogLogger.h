@@ -142,6 +142,7 @@ private:
     long _baud;
     int _consoleOption;
     int _driver;
+    int _max_queue_size;
     
 public:
     /*! 
@@ -161,6 +162,7 @@ public:
 	* \machine Scout name
 	* \procid Process number, default is 0
 	* \appname App name
+	* \max_queue_size Maximum number of messages to queue for sending
 	*/
 
 	void setup(int level, long baud,
@@ -171,14 +173,17 @@ public:
 	 int facility,
 	 char * machine,
 	 int procid,
-	 char * appname
+	 char * appname,
+	 int max_queue_size
 	);
 	
 	/**
 	* loop, processed message reception over LWM from the Scouts
 	*/
 	
-	void handleMessages();	
+	void loop();	
+	
+	void PrintSendList();
 	
     /**
 	* Output an error message. Output message contains

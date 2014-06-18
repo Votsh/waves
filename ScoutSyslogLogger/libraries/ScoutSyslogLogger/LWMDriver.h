@@ -32,26 +32,79 @@ along with ATP.  If not, see <http://www.gnu.org/licenses/>.
 extern "C"{
 #endif
 
-typedef struct node {
-  char * data;
+struct node {
+  char * data;  
   struct node * next;
-} node_t;
+};
+typedef struct node node_t;
 
-struct node *root;
-struct node *conductor;      
-struct node *prevnode;      
+node_t * root;
+node_t * conductor;      
+node_t * prevnode;
 
-int cnt;
+struct sendnode{
+  struct sendnode * next;
+  int stage;
+  int status;
+  unsigned long timeorigin;
+  NWK_DataReq_t * req;
+};
 
-void sendConfirm( NWK_DataReq_t *req );
+typedef struct sendnode sendnode_t;
 
-void sendLWMMsg( char * data, int destination_mesh_id );
+sendnode_t * sendroot;
+sendnode_t * sendconductor;      
+sendnode_t * sendprevnode;   
+sendnode_t * sendremove;   
 
-bool receiveMessage(NWK_DataInd_t *ind);
+#define lwmInit 0
+#define lwmSent 1
+#define lwmConfirmed 2
+#define lwmError 3
+
+#define lwmTimeout 10000
+
+char * recentError;
+int * recentErrorInt;
+
+uint8_t cnt;
+uint8_t cntsend;
+
+unsigned long bytesused;
+unsigned long bytesfreed;
+
+static void sendConfirm( NWK_DataReq_t * req2 );
+
+sendnode_t * LWMGetSendList();
+
+int sendLWMMsg( char * data, int destination_mesh_id, unsigned long time );
+
+uint8_t LWMRecCount();
+uint8_t LWMSendCount();
+unsigned long LWMSendBytesUsed();
+unsigned long LWMSendBytesFreed();
+
+void LWMSendMessages( unsigned long time );
+
+void LWMPruneSendList( unsigned long time );
+
+static bool receiveMessage(NWK_DataInd_t *ind);
 
 char * printStatus( int status );
 
 void LWMDriverInit();
+
+
+uint8_t LWMgetsize1();
+uint8_t LWMgetsize2();
+uint8_t LWMgetsize3();
+uint8_t size1;
+uint8_t size2;
+uint8_t size3;
+
+uint8_t LWMgetQueueSize();
+
+int sizeofme();
 
 node_t * LWMGetRoot();
 void LWMSetRoot(node_t *);
