@@ -252,6 +252,8 @@ void WAVE_GetChunk(void)
         
   }
 
+  Log.Info("Free memory at %d"CR, freeRam() );      
+
   Log.Info("Chunk at address %d size %d bytes\n", mychunk, mychunksize);
 
   Log.Info("Chunk time: %l, Chunk Duration: %l, Nextchunk: %l, Nextchunk size: %l\n", mychunk->time, mychunk->duration, mychunk->nextchunk, mychunk->nextchunksize);    
@@ -272,10 +274,12 @@ void setup() {
   
   
   SDTest();
+
+  Log.Info("Free memory at %d"CR, freeRam() );      
  
   WAVE_GetHeader();
   
-  showstart = millis() + 2000;  // TODO - replace with starting instructions from mesh network
+  showstart = millis() + 4000;  // TODO - replace with starting instructions from mesh network
 
 }
 
@@ -288,7 +292,7 @@ void loop() {
     
     while (millis() < showstart); // wait for show start
     
-    Log.Info("Starting show!\n");
+    Log.Info("Starting show!\n");    
   }
 
   WAVE_GetChunk();  // retrieve our next chunk from the SD file
@@ -369,7 +373,16 @@ void loop() {
     }    
 
     strip.show();  // output data to pixelss
-    
   }
+  Log.Info("Free memory at %d"CR, freeRam() );      
 
+  showstart = millis() + 2000;  // TODO - replace with starting instructions from mesh network
+
+}
+
+int freeRam() 
+{
+  extern int __heap_start, *__brkval; 
+  int v; 
+  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }

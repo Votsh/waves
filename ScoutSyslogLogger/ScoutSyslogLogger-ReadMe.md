@@ -247,13 +247,16 @@ LogIo is a Node.js based Web front end app. With Node.js already installed, use 
 npm install -g log.io
 
 2. Launch server
-log.io-server
+
+   sudo nohup /usr/bin/log.io-server &
 
 3. Configure log harvester
-vi ~/.log.io/harvester.conf
+
+   vi ~/.log.io/harvester.conf
 
 4. Start log harvester
-log.io-harvester
+   
+   sudo nohup /usr/bin/log.io-harvester &
 
 5. Browse to http://localhost:28778
 
@@ -288,7 +291,7 @@ At a code leve, ScoutSyslogLogger uses the following object architecture.
 
 ##How To Contribute
 
-ScoutSyslogLogger was originally written by Frank Cohen of Votsh. Frank's opinion of C and C++: "Come on C and C++, I remember back to the 1980's when you were written. You were an expression of teenage angst. Your times is past." The code is waiting for you to improve it past the original febile attempt.
+ScoutSyslogLogger was originally written by Frank Cohen of Votsh. Frank's opinion of C and C++: "Come on C and C++, I remember back to the 1980's when you were written. You were an expression of teenage angst. Your time is past." The ScoutSyslogLogger code is waiting for you to improve it past the original febile attempt.
 
 Code Repository is at [https://github.com/Votsh/waves](https://github.com/Votsh/waves)
 
